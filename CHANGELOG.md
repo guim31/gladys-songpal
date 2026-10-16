@@ -10,6 +10,8 @@ the notes of the version's GitHub Release.
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-10-16
+
 ### Added
 
 - Sony sound bars, AV receivers and wireless speakers (Sony Music Center /
@@ -29,4 +31,5 @@ the notes of the version's GitHub Release.
 - "Test the connection" in the Configuration screen.
 - English, French, German and Spanish texts and documentation.
 
-[Unreleased]: https://github.com/guim31/gladys-songpal/commits/main
+[Unreleased]: https://github.com/guim31/gladys-songpal/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/guim31/gladys-songpal/releases/tag/v1.0.1
