@@ -1,93 +1,101 @@
+// -----------------------------------------------------------------------------
+// The scene actions: what a scene author types, the device turned on first,
+// and what they return to the next actions.
+// -----------------------------------------------------------------------------
+
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
-import { createFakeGladys } from '@gladysassistant/integration-sdk/testing';
-import { DEVICE_BLUEPRINTS } from '../src/devices/index.js';
-import { MOTION_DETECTED_TRIGGER, motionSensor } from '../src/devices/motionSensor.js';
-import { SCENE_ACTIONS } from '../src/scenes.js';
-import { normalizeConfig } from '../src/config.js';
+import { FakeSongpal, createWorld, deviceOf, settle, stateOf } from './helpers/world.js';
 
-const manifest = JSON.parse(
-  await readFile(new URL('../gladys-assistant-integration.json', import.meta.url), 'utf8'),
-);
-const config = normalizeConfig();
+test('choose a source by its name, the device in standby turned on first', async (t) => {
+  const receiver = new FakeSongpal('str-dn1080', { power: 'standby' });
+  const world = await createWorld({ devices: [receiver] });
+  t.after(() => world.app.stop());
+  const device = deviceOf(world, receiver).external_id;
 
-const declarationOf = (list, key) => manifest[list].find((entry) => entry.key === key);
-const keysOf = (list) => (list ?? []).map((entry) => entry.key);
-const deviceIdOf = (gladys, key) =>
-  DEVICE_BLUEPRINTS.find((bp) => bp.key === key).deviceExternalId(gladys);
+  const ack = await world.fake.sceneAction('select_source', { device, source: 'blu ray' });
+  assert.equal(ack.success, true, ack.error);
+  assert.deepEqual(ack.data.outputs, { source: 'Blu-ray' });
+  assert.equal(receiver.power, 'active');
+  assert.equal(receiver.playing[0].uri, 'extInput:hdmi?port=1');
+  await settle();
+  assert.equal(stateOf(world, 'source', receiver), 'extInput:hdmi?port=1');
 
-// Let the async interval callback run to completion.
-const flush = () => new Promise((resolve) => setImmediate(resolve));
-
-test('the motion sensor fires one motion_detected event per detection, none on the clear', async (t) => {
-  t.mock.timers.enable({ apis: ['setInterval', 'setTimeout'] });
-  const gladys = createFakeGladys();
-  const stopPush = motionSensor.startPush(gladys, config);
-  try {
-    t.mock.timers.tick(60_000);
-    await flush();
-    assert.equal(gladys.fake.sceneEvents.length, 1, 'one detection, one event');
-    assert.equal(gladys.fake.sceneEvents[0].key, MOTION_DETECTED_TRIGGER);
-    assert.equal(gladys.fake.states.at(-1).state, 1, 'the state is still published');
-
-    t.mock.timers.tick(10_000);
-    await flush();
-    assert.equal(gladys.fake.states.at(-1).state, 0, 'the detection is cleared');
-    assert.equal(gladys.fake.sceneEvents.length, 1, 'the clear fires no event');
-  } finally {
-    stopPush();
-  }
+  const unknown = await world.fake.sceneAction('select_source', { device, source: 'Phono' });
+  assert.equal(unknown.success, false);
+  assert.match(unknown.error, /"Phono" is not a source of STR-DN1080/);
 });
 
-test('motion_detected data only carries keys the trigger declares', async (t) => {
-  t.mock.timers.enable({ apis: ['setInterval', 'setTimeout'] });
-  const gladys = createFakeGladys();
-  const stopPush = motionSensor.startPush(gladys, config);
-  try {
-    t.mock.timers.tick(60_000);
-    await flush();
-  } finally {
-    stopPush();
-  }
-  const [{ data }] = gladys.fake.sceneEvents;
-  const trigger = declarationOf('scene_triggers', MOTION_DETECTED_TRIGGER);
-  // The core keeps the `fields` keys (filters) and the `variables` keys
-  // (exposed to the scene): any other key would be silently dropped.
-  const declared = [...keysOf(trigger.fields), ...keysOf(trigger.variables)];
-  for (const [key, value] of Object.entries(data)) {
-    assert.ok(declared.includes(key), `data.${key} is not declared, the core would drop it`);
-    assert.ok(value === null || typeof value !== 'object', `data.${key} must be a primitive`);
-  }
-  // A `"source": "devices"` filter stores a device external_id.
-  assert.equal(data.device, deviceIdOf(gladys, 'motion-sensor'));
-  const targets = trigger.fields.find((field) => field.key === 'target').options;
-  assert.ok(
-    targets.some((option) => option.value === data.target),
-    `data.target "${data.target}" must be one of the filter options`,
-  );
-});
-
-test('identify_device signals the chosen device and returns the declared outputs', async () => {
-  const gladys = createFakeGladys();
-  const outputs = await SCENE_ACTIONS.identify_device(gladys, {
-    fields: { device: deviceIdOf(gladys, 'light') },
-    config,
+test('without a device: the first one', async (t) => {
+  const world = await createWorld();
+  t.after(() => world.app.stop());
+  const ack = await world.fake.sceneAction('select_source', { source: 'HDMI 1' });
+  assert.equal(ack.success, true, ack.error);
+  assert.equal(world.device.playing[0].uri, 'extInput:hdmi?port=1');
+  const gone = await world.fake.sceneAction('select_source', {
+    device: 'ext:test-integration:audio:mac-00005e00ffff',
+    source: 'TV',
   });
-  assert.deepEqual(outputs, { signalled: true });
-  const declared = keysOf(declarationOf('scene_actions', 'identify_device').outputs);
-  for (const key of Object.keys(outputs)) {
-    assert.ok(declared.includes(key), `output "${key}" is not declared, the core would drop it`);
-  }
+  assert.equal(gone.success, false);
+  assert.match(gone.error, /not known to the integration/);
 });
 
-test('identify_device reports a device that cannot signal itself through its output', async () => {
-  // Not a failure: a scene action is never a condition, the scene author
-  // gates the following actions on the output instead.
-  const gladys = createFakeGladys();
-  const outputs = await SCENE_ACTIONS.identify_device(gladys, {
-    fields: { device: deviceIdOf(gladys, 'weather-station') },
-    config,
+test('set the sound: mode, night, voice and volume in one step', async (t) => {
+  const world = await createWorld();
+  t.after(() => world.app.stop());
+  const { device } = world;
+  const ack = await world.fake.sceneAction('set_sound', {
+    device: deviceOf(world).external_id,
+    sound_mode: 'movie',
+    night_mode: 'on',
+    voice: 'on',
+    volume: 12,
   });
-  assert.deepEqual(outputs, { signalled: false });
+  assert.equal(ack.success, true, ack.error);
+  assert.deepEqual(ack.data.outputs, { sound_mode: 'Movie', volume: 12 });
+  assert.equal(device.setting('soundField').currentValue, 'movie');
+  assert.equal(device.setting('nightMode').currentValue, 'on');
+  assert.equal(device.setting('voice').currentValue, 'on');
+  assert.equal(device.mainVolume.volume, 12);
+
+  // Nothing typed: nothing changed, the current values returned.
+  const before = device.commands().length;
+  const idle = await world.fake.sceneAction('set_sound', {
+    device: deviceOf(world).external_id,
+    night_mode: 'unchanged',
+    voice: 'unchanged',
+  });
+  assert.deepEqual(idle.data.outputs, { sound_mode: 'Movie', volume: 12 });
+  assert.equal(device.commands().length, before);
+});
+
+test('set the sound: voice levels of a 2017 sound bar, a speaker without night mode', async (t) => {
+  const bar = new FakeSongpal('ht-st5000');
+  const speaker = new FakeSongpal('srs-x77');
+  const world = await createWorld({ devices: [bar, speaker] });
+  t.after(() => world.app.stop());
+  const on = await world.fake.sceneAction('set_sound', {
+    device: deviceOf(world, bar).external_id,
+    voice: 'on',
+  });
+  assert.equal(on.success, true, on.error);
+  assert.equal(bar.setting('voice').currentValue, 'type1');
+  await world.fake.sceneAction('set_sound', {
+    device: deviceOf(world, bar).external_id,
+    voice: 'off',
+  });
+  assert.equal(bar.setting('voice').currentValue, 'off');
+
+  const refused = await world.fake.sceneAction('set_sound', {
+    device: deviceOf(world, speaker).external_id,
+    night_mode: 'on',
+  });
+  assert.equal(refused.success, false);
+  assert.match(refused.error, /Kitchen speaker has no such setting/);
+  // A sound mode of the speaker: its equalizer presets.
+  const rock = await world.fake.sceneAction('set_sound', {
+    device: deviceOf(world, speaker).external_id,
+    sound_mode: 'Rock',
+  });
+  assert.deepEqual(rock.data.outputs, { sound_mode: 'Rock', volume: 12 });
 });

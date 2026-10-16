@@ -1,0 +1,537 @@
+{
+  "address": "192.0.2.32",
+  "location": "http://192.0.2.32:54380/description.xml",
+  "description": "<?xml version=\"1.0\"?>\n<root xmlns=\"urn:schemas-upnp-org:device-1-0\" xmlns:av=\"urn:schemas-sony-com:av\"><specVersion><major>1</major><minor>0</minor></specVersion><device><deviceType>urn:schemas-upnp-org:device:MediaRenderer:1</deviceType><friendlyName>Kitchen speaker</friendlyName><manufacturer>Sony Corporation</manufacturer><manufacturerURL>http://www.sony.net/</manufacturerURL><modelName>SRS-X77</modelName><UDN>uuid:00000000-0000-1010-8000-00005e005350</UDN><av:X_ScalarWebAPI_DeviceInfo><av:X_ScalarWebAPI_Version>1.0</av:X_ScalarWebAPI_Version><av:X_ScalarWebAPI_BaseURL>http://192.0.2.32:10000/sony</av:X_ScalarWebAPI_BaseURL><av:X_ScalarWebAPI_ServiceList><av:X_ScalarWebAPI_ServiceType>guide</av:X_ScalarWebAPI_ServiceType><av:X_ScalarWebAPI_ServiceType>system</av:X_ScalarWebAPI_ServiceType><av:X_ScalarWebAPI_ServiceType>audio</av:X_ScalarWebAPI_ServiceType><av:X_ScalarWebAPI_ServiceType>avContent</av:X_ScalarWebAPI_ServiceType></av:X_ScalarWebAPI_ServiceList></av:X_ScalarWebAPI_DeviceInfo><serviceList><service><serviceType>urn:schemas-sony-com:service:ScalarWebAPI:1</serviceType><serviceId>urn:schemas-sony-com:serviceId:ScalarWebAPI</serviceId><SCPDURL>/ScalarWebAPI.xml</SCPDURL><controlURL>/ScalarWebAPI/control</controlURL><eventSubURL></eventSubURL></service></serviceList></device></root>\n",
+  "responses": {
+    "guide.getSupportedApiInfo": {
+      "id": 1,
+      "result": [
+        [
+          {
+            "service": "guide",
+            "protocols": ["xhrpost:jsonizer"],
+            "apis": [
+              {
+                "name": "getServiceProtocols",
+                "versions": [
+                  {
+                    "version": "1.0"
+                  }
+                ]
+              },
+              {
+                "name": "getSupportedApiInfo",
+                "versions": [
+                  {
+                    "version": "1.0"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "service": "system",
+            "protocols": ["xhrpost:jsonizer", "websocket:jsonizer"],
+            "apis": [
+              {
+                "name": "getDeviceMiscSettings",
+                "versions": [
+                  {
+                    "version": "1.0"
+                  }
+                ]
+              },
+              {
+                "name": "getInterfaceInformation",
+                "versions": [
+                  {
+                    "version": "1.0"
+                  }
+                ]
+              },
+              {
+                "name": "getPowerSettings",
+                "versions": [
+                  {
+                    "version": "1.0"
+                  }
+                ]
+              },
+              {
+                "name": "getPowerStatus",
+                "versions": [
+                  {
+                    "version": "1.1"
+                  }
+                ]
+              },
+              {
+                "name": "getSettingsTree",
+                "versions": [
+                  {
+                    "version": "1.1"
+                  }
+                ]
+              },
+              {
+                "name": "getSWUpdateInfo",
+                "versions": [
+                  {
+                    "version": "1.0"
+                  }
+                ]
+              },
+              {
+                "name": "getSystemInformation",
+                "versions": [
+                  {
+                    "version": "1.0"
+                  }
+                ]
+              },
+              {
+                "name": "setPowerStatus",
+                "versions": [
+                  {
+                    "version": "1.1"
+                  }
+                ]
+              },
+              {
+                "name": "switchNotifications",
+                "versions": [
+                  {
+                    "version": "1.0"
+                  }
+                ]
+              }
+            ],
+            "notifications": [
+              {
+                "name": "notifyPowerStatus",
+                "versions": [
+                  {
+                    "version": "1.0"
+                  }
+                ]
+              },
+              {
+                "name": "notifySettingsUpdate",
+                "versions": [
+                  {
+                    "version": "1.0"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "service": "audio",
+            "protocols": ["xhrpost:jsonizer", "websocket:jsonizer"],
+            "apis": [
+              {
+                "name": "getSoundSettings",
+                "versions": [
+                  {
+                    "version": "1.1"
+                  }
+                ]
+              },
+              {
+                "name": "getVolumeInformation",
+                "versions": [
+                  {
+                    "version": "1.1"
+                  }
+                ]
+              },
+              {
+                "name": "setAudioMute",
+                "versions": [
+                  {
+                    "version": "1.1"
+                  }
+                ]
+              },
+              {
+                "name": "setAudioVolume",
+                "versions": [
+                  {
+                    "version": "1.1"
+                  }
+                ]
+              },
+              {
+                "name": "setSoundSettings",
+                "versions": [
+                  {
+                    "version": "1.1"
+                  }
+                ]
+              },
+              {
+                "name": "switchNotifications",
+                "versions": [
+                  {
+                    "version": "1.0"
+                  }
+                ]
+              }
+            ],
+            "notifications": [
+              {
+                "name": "notifyVolumeInformation",
+                "versions": [
+                  {
+                    "version": "1.0"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "service": "avContent",
+            "protocols": ["xhrpost:jsonizer", "websocket:jsonizer"],
+            "apis": [
+              {
+                "name": "getAvailablePlaybackFunction",
+                "versions": [
+                  {
+                    "version": "1.0"
+                  }
+                ]
+              },
+              {
+                "name": "getCurrentExternalTerminalsStatus",
+                "versions": [
+                  {
+                    "version": "1.0"
+                  }
+                ]
+              },
+              {
+                "name": "getPlayingContentInfo",
+                "versions": [
+                  {
+                    "version": "1.2"
+                  }
+                ]
+              },
+              {
+                "name": "getSourceList",
+                "versions": [
+                  {
+                    "version": "1.2"
+                  }
+                ]
+              },
+              {
+                "name": "pausePlayingContent",
+                "versions": [
+                  {
+                    "version": "1.1"
+                  }
+                ]
+              },
+              {
+                "name": "setPlayContent",
+                "versions": [
+                  {
+                    "version": "1.2"
+                  }
+                ]
+              },
+              {
+                "name": "setPlayNextContent",
+                "versions": [
+                  {
+                    "version": "1.0"
+                  }
+                ]
+              },
+              {
+                "name": "setPlayPreviousContent",
+                "versions": [
+                  {
+                    "version": "1.0"
+                  }
+                ]
+              },
+              {
+                "name": "stopPlayingContent",
+                "versions": [
+                  {
+                    "version": "1.1"
+                  }
+                ]
+              },
+              {
+                "name": "switchNotifications",
+                "versions": [
+                  {
+                    "version": "1.0"
+                  }
+                ]
+              }
+            ],
+            "notifications": [
+              {
+                "name": "notifyPlayingContentInfo",
+                "versions": [
+                  {
+                    "version": "1.0"
+                  }
+                ]
+              },
+              {
+                "name": "notifyAvailablePlaybackFunction",
+                "versions": [
+                  {
+                    "version": "1.0"
+                  }
+                ]
+              },
+              {
+                "name": "notifyExternalTerminalStatus",
+                "versions": [
+                  {
+                    "version": "1.0"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      ]
+    },
+    "system.getPowerStatus": {
+      "id": 2,
+      "result": [
+        {
+          "status": "active"
+        }
+      ]
+    },
+    "system.getSystemInformation": {
+      "id": 3,
+      "result": [
+        {
+          "bdAddr": "00:00:5e:00:53:51",
+          "macAddr": "",
+          "version": "2.11.0",
+          "wirelessMacAddr": "00:00:5e:00:53:50"
+        }
+      ]
+    },
+    "system.getInterfaceInformation": {
+      "id": 4,
+      "result": [
+        {
+          "productName": "PersonalAudioSystem",
+          "modelName": "SRS-X77",
+          "productCategory": "personalAudio",
+          "interfaceVersion": "1.0.0",
+          "serverName": ""
+        }
+      ]
+    },
+    "audio.getVolumeInformation": {
+      "id": 5,
+      "result": [
+        [
+          {
+            "output": "",
+            "volume": 12,
+            "mute": "off",
+            "maxVolume": 30,
+            "minVolume": 0,
+            "step": 1
+          }
+        ]
+      ]
+    },
+    "audio.getSoundSettings": {
+      "id": 6,
+      "result": [
+        [
+          {
+            "target": "clearAudio",
+            "currentValue": "on",
+            "deviceUIInfo": "",
+            "title": "ClearAudio+",
+            "titleTextID": "",
+            "type": "booleanTarget",
+            "isAvailable": true,
+            "candidate": [
+              {
+                "title": "On",
+                "titleTextID": "",
+                "value": "on",
+                "isAvailable": true,
+                "min": null,
+                "max": null,
+                "step": null
+              },
+              {
+                "title": "Off",
+                "titleTextID": "",
+                "value": "off",
+                "isAvailable": true,
+                "min": null,
+                "max": null,
+                "step": null
+              }
+            ]
+          },
+          {
+            "target": "soundField",
+            "currentValue": "off",
+            "deviceUIInfo": "",
+            "title": "Preset EQ",
+            "titleTextID": "",
+            "type": "enumTarget",
+            "isAvailable": true,
+            "candidate": [
+              {
+                "title": "Off",
+                "titleTextID": "",
+                "value": "off",
+                "isAvailable": true,
+                "min": null,
+                "max": null,
+                "step": null
+              },
+              {
+                "title": "Rock",
+                "titleTextID": "",
+                "value": "rock",
+                "isAvailable": true,
+                "min": null,
+                "max": null,
+                "step": null
+              },
+              {
+                "title": "Pop",
+                "titleTextID": "",
+                "value": "pop",
+                "isAvailable": true,
+                "min": null,
+                "max": null,
+                "step": null
+              },
+              {
+                "title": "Jazz",
+                "titleTextID": "",
+                "value": "jazz",
+                "isAvailable": true,
+                "min": null,
+                "max": null,
+                "step": null
+              },
+              {
+                "title": "Dance",
+                "titleTextID": "",
+                "value": "dance",
+                "isAvailable": true,
+                "min": null,
+                "max": null,
+                "step": null
+              },
+              {
+                "title": "R&B/HIP HOP",
+                "titleTextID": "",
+                "value": "rnb",
+                "isAvailable": true,
+                "min": null,
+                "max": null,
+                "step": null
+              },
+              {
+                "title": "Unspecified",
+                "titleTextID": "",
+                "value": "unspecified",
+                "isAvailable": true,
+                "min": null,
+                "max": null,
+                "step": null
+              }
+            ]
+          },
+          {
+            "target": "wideStereo",
+            "currentValue": "off",
+            "deviceUIInfo": "",
+            "title": "Wide Stereo",
+            "titleTextID": "",
+            "type": "enumTarget",
+            "isAvailable": true,
+            "candidate": [
+              {
+                "title": "On",
+                "titleTextID": "",
+                "value": "on",
+                "isAvailable": true,
+                "min": null,
+                "max": null,
+                "step": null
+              },
+              {
+                "title": "Off",
+                "titleTextID": "",
+                "value": "off",
+                "isAvailable": true,
+                "min": null,
+                "max": null,
+                "step": null
+              }
+            ]
+          }
+        ]
+      ]
+    },
+    "avContent.getCurrentExternalTerminalsStatus": {
+      "id": 8,
+      "result": [
+        [
+          {
+            "uri": "extInput:btAudio",
+            "title": "Bluetooth",
+            "connection": "unknown",
+            "label": "",
+            "iconUrl": "",
+            "meta": "meta:btaudio",
+            "active": "inactive"
+          },
+          {
+            "uri": "extInput:line",
+            "title": "Audio in",
+            "connection": "unknown",
+            "label": "",
+            "iconUrl": "",
+            "meta": "meta:line",
+            "active": "inactive"
+          }
+        ]
+      ]
+    },
+    "avContent.getPlayingContentInfo": {
+      "id": 9,
+      "result": [
+        [
+          {
+            "uri": "netService:audio",
+            "source": "netService:audio",
+            "output": "",
+            "contentKind": "service",
+            "applicationName": "Spotify",
+            "title": "A song",
+            "artist": "An artist",
+            "stateInfo": {
+              "state": "PLAYING"
+            }
+          }
+        ]
+      ]
+    }
+  }
+}

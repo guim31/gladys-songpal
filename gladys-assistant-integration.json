@@ -1,177 +1,537 @@
 {
   "manifest_version": 1,
   "type": "device",
-  "name": "Demo Devices Template",
+  "name": "Sony Audio",
   "description": {
-    "en": "Starter template showing sensors, a switch, a dimmable light and a smart plug.",
-    "fr": "Template de démarrage : capteurs, interrupteur, lampe variable et prise connectée."
+    "en": "Sony sound bars, receivers and speakers: power, volume, source, sound mode, in real time, locally.",
+    "fr": "Barres de son, amplis et enceintes Sony : marche, volume, source, mode son, en direct et en local.",
+    "de": "Sony-Soundbars, Receiver und Lautsprecher: Ein/Aus, Lautstärke, Quelle, Klang, live und lokal.",
+    "es": "Barras de sonido, receptores y altavoces Sony: encendido, volumen, fuente y sonido, en local."
   },
   "version": "1.0.0",
-  "docker_image": "ghcr.io/gladysassistant/integration-template-js:1.0.0",
+  "docker_image": "ghcr.io/guim31/gladys-songpal:1.0.0",
   "gladys_version": ">=5.1.0",
-  "cover_image": "https://raw.githubusercontent.com/GladysAssistant/integration-template-js/master/cover.png",
-  "categories": ["lighting", "security", "environment"],
-  "transports": ["local", "cloud"],
+  "cover_image": "https://raw.githubusercontent.com/guim31/gladys-songpal/main/cover.png",
+  "categories": ["multimedia"],
+  "transports": ["local"],
+  "network_discovery": [{ "type": "ssdp", "st": "urn:schemas-sony-com:service:ScalarWebAPI:1" }],
   "config_schema": [
     {
       "key": "intro",
       "type": "section",
-      "label": { "en": "Getting started", "fr": "Pour commencer" },
-      "description": {
-        "en": "The demo weather station reads real data from the free Open-Meteo API: pick the coordinates to observe. No account, no API key.",
-        "fr": "La station météo de démonstration lit de vraies données via l'API gratuite Open-Meteo : choisissez les coordonnées à observer. Pas de compte, pas de clé d'API."
+      "label": {
+        "en": "Your Sony audio devices",
+        "fr": "Vos appareils audio Sony",
+        "de": "Deine Sony-Audiogeräte",
+        "es": "Sus dispositivos de audio Sony"
       },
-      "links": [
+      "description": {
+        "en": "Sound bars, receivers and speakers that work with the Sony Music Center app (formerly SongPal). Connect them to your network, turn on network standby (\"Network standby\" or \"Quick start\") so they can be turned on from Gladys, then search in the Discovery tab of this integration.",
+        "fr": "Barres de son, amplis et enceintes compatibles avec l'application Sony Music Center (ex-SongPal). Connectez-les au réseau, activez la veille réseau (« Veille réseau » ou « Démarrage rapide ») pour les allumer depuis Gladys, puis lancez une recherche dans l'onglet Découverte.",
+        "de": "Soundbars, Receiver und Lautsprecher, die mit der App Sony Music Center (früher SongPal) funktionieren. Verbinde sie mit deinem Netzwerk, aktiviere den Netzwerk-Standby („Netzwerk-Standby“ oder „Schnellstart“), damit Gladys sie einschalten kann, und suche dann im Tab Erkennung dieser Integration.",
+        "es": "Barras de sonido, receptores y altavoces compatibles con la aplicación Sony Music Center (antes SongPal). Conéctelos a su red, active la espera de red («Espera de red» o «Inicio rápido») para poder encenderlos desde Gladys y luego busque en la pestaña Descubrimiento de esta integración."
+      }
+    },
+    {
+      "key": "hosts",
+      "type": "string",
+      "label": {
+        "en": "Addresses (optional)",
+        "fr": "Adresses (facultatif)",
+        "de": "Adressen (optional)",
+        "es": "Direcciones (opcional)"
+      },
+      "description": {
+        "en": "Only for a device the search does not find: its IP address, several separated by commas. Give it a fixed address in your router.",
+        "fr": "Seulement pour un appareil que la recherche ne trouve pas : son adresse IP, plusieurs séparées par des virgules. Fixez-la dans votre box ou routeur.",
+        "de": "Nur für ein Gerät, das die Suche nicht findet: seine IP-Adresse, mehrere durch Kommas getrennt. Lege sie in deinem Router fest.",
+        "es": "Solo para un dispositivo que la búsqueda no encuentra: su dirección IP, varias separadas por comas. Fíjela en su router."
+      },
+      "placeholder": {
+        "en": "e.g. 192.168.1.30",
+        "fr": "ex. 192.168.1.30",
+        "de": "z. B. 192.168.1.30",
+        "es": "p. ej. 192.168.1.30"
+      },
+      "required": false,
+      "default": ""
+    },
+    {
+      "key": "options",
+      "type": "section",
+      "label": {
+        "en": "Options",
+        "fr": "Options",
+        "de": "Optionen",
+        "es": "Opciones"
+      },
+      "description": {
+        "en": "The devices send their changes as they happen. When they cannot, they are read at this interval.",
+        "fr": "Les appareils envoient leurs changements au fil de l'eau. Quand ils ne le peuvent pas, ils sont lus à cet intervalle.",
+        "de": "Die Geräte senden ihre Änderungen sofort. Wenn sie das nicht können, werden sie in diesem Abstand gelesen.",
+        "es": "Los dispositivos envían sus cambios en el momento. Cuando no pueden, se leen con este intervalo."
+      }
+    },
+    {
+      "key": "poll_interval",
+      "type": "select",
+      "label": {
+        "en": "Refresh interval",
+        "fr": "Intervalle de lecture",
+        "de": "Leseintervall",
+        "es": "Intervalo de lectura"
+      },
+      "required": false,
+      "default": "30",
+      "options": [
         {
-          "url": "https://open-meteo.com/en/docs",
-          "label": { "en": "Open-Meteo documentation", "fr": "Documentation Open-Meteo" }
+          "value": "10",
+          "label": {
+            "en": "10 seconds",
+            "fr": "10 secondes",
+            "de": "10 Sekunden",
+            "es": "10 segundos"
+          }
+        },
+        {
+          "value": "30",
+          "label": {
+            "en": "30 seconds",
+            "fr": "30 secondes",
+            "de": "30 Sekunden",
+            "es": "30 segundos"
+          }
+        },
+        {
+          "value": "60",
+          "label": { "en": "1 minute", "fr": "1 minute", "de": "1 Minute", "es": "1 minuto" }
+        },
+        {
+          "value": "300",
+          "label": { "en": "5 minutes", "fr": "5 minutes", "de": "5 Minuten", "es": "5 minutos" }
         }
       ]
     },
     {
-      "key": "latitude",
-      "type": "number",
-      "label": { "en": "Latitude", "fr": "Latitude" },
-      "description": {
-        "en": "Latitude used for the demo weather sensor.",
-        "fr": "Latitude utilisée par le capteur météo de démonstration."
-      },
-      "placeholder": { "en": "e.g. 48.8566", "fr": "ex. 48.8566" },
-      "required": true,
-      "default": 48.8566,
-      "min": -90,
-      "max": 90
-    },
-    {
-      "key": "longitude",
-      "type": "number",
-      "label": { "en": "Longitude", "fr": "Longitude" },
-      "description": {
-        "en": "Longitude used for the demo weather sensor.",
-        "fr": "Longitude utilisée par le capteur météo de démonstration."
-      },
-      "placeholder": { "en": "e.g. 2.3522", "fr": "ex. 2.3522" },
-      "required": true,
-      "default": 2.3522,
-      "min": -180,
-      "max": 180
-    },
-    {
-      "key": "unit",
+      "key": "volume_step",
       "type": "select",
-      "label": { "en": "Temperature unit", "fr": "Unité de température" },
+      "label": {
+        "en": "Volume step of the widget",
+        "fr": "Pas de volume du widget",
+        "de": "Lautstärkeschritt des Widgets",
+        "es": "Paso de volumen del widget"
+      },
+      "description": {
+        "en": "How much the Volume − and Volume + buttons change the volume.",
+        "fr": "De combien les boutons Volume − et Volume + changent le volume.",
+        "de": "Um wie viel die Tasten Leiser und Lauter die Lautstärke ändern.",
+        "es": "Cuánto cambian el volumen los botones Volumen − y Volumen +."
+      },
       "required": false,
-      "default": "celsius",
+      "default": "2",
       "options": [
-        { "value": "celsius", "label": { "en": "Celsius", "fr": "Celsius" } },
-        { "value": "fahrenheit", "label": { "en": "Fahrenheit", "fr": "Fahrenheit" } }
+        { "value": "1", "label": { "en": "1", "fr": "1", "de": "1", "es": "1" } },
+        { "value": "2", "label": { "en": "2", "fr": "2", "de": "2", "es": "2" } },
+        { "value": "5", "label": { "en": "5", "fr": "5", "de": "5", "es": "5" } }
       ]
     },
     {
-      "key": "poll_frequency",
-      "type": "number",
-      "label": { "en": "Refresh interval (s)", "fr": "Intervalle de rafraîchissement (s)" },
+      "key": "language",
+      "type": "select",
+      "label": {
+        "en": "Language of the feature names",
+        "fr": "Langue des noms de fonctionnalités",
+        "de": "Sprache der Funktionsnamen",
+        "es": "Idioma de los nombres de funciones"
+      },
       "description": {
-        "en": "How often sensors are polled, in seconds (one minute minimum).",
-        "fr": "Fréquence d'interrogation des capteurs, en secondes (une minute minimum)."
+        "en": "Used for the names of the features of a new device, and the messages of the integration.",
+        "fr": "Pour les noms des fonctionnalités d'un nouvel appareil, et les messages de l'intégration.",
+        "de": "Für die Namen der Funktionen eines neuen Geräts und die Meldungen der Integration.",
+        "es": "Para los nombres de las funciones de un dispositivo nuevo y los mensajes de la integración."
       },
       "required": false,
-      "default": 300,
-      "min": 60,
-      "max": 3600
+      "default": "fr",
+      "options": [
+        {
+          "value": "en",
+          "label": { "en": "English", "fr": "Anglais", "de": "Englisch", "es": "Inglés" }
+        },
+        {
+          "value": "fr",
+          "label": { "en": "French", "fr": "Français", "de": "Französisch", "es": "Francés" }
+        },
+        {
+          "value": "de",
+          "label": { "en": "German", "fr": "Allemand", "de": "Deutsch", "es": "Alemán" }
+        },
+        {
+          "value": "es",
+          "label": { "en": "Spanish", "fr": "Espagnol", "de": "Spanisch", "es": "Español" }
+        }
+      ]
     }
   ],
   "actions": [
     {
-      "key": "test_weather",
-      "label": { "en": "Test the weather provider", "fr": "Tester le fournisseur météo" },
-      "timeout_seconds": 30
-    },
-    {
-      "key": "identify",
-      "label": { "en": "Identify a device", "fr": "Identifier un appareil" },
-      "fields": [
-        {
-          "key": "device",
-          "type": "select",
-          "source": "devices",
-          "label": { "en": "Device", "fr": "Appareil" },
-          "required": true
-        }
-      ]
+      "key": "test_connection",
+      "label": {
+        "en": "Test the connection",
+        "fr": "Tester la connexion",
+        "de": "Verbindung testen",
+        "es": "Probar la conexión"
+      },
+      "description": {
+        "en": "Reads every known device now and reports what it finds.",
+        "fr": "Lit maintenant chaque appareil connu et dit ce qu'il trouve.",
+        "de": "Liest jetzt jedes bekannte Gerät und meldet, was es findet.",
+        "es": "Lee ahora cada dispositivo conocido e informa de lo que encuentra."
+      },
+      "timeout_seconds": 60
     }
   ],
   "scene_triggers": [
     {
-      "key": "motion_detected",
-      "label": { "en": "Motion detected", "fr": "Mouvement détecté" },
+      "key": "source_changed",
+      "label": {
+        "en": "Sony Audio: source changed",
+        "fr": "Sony Audio : source changée",
+        "de": "Sony Audio: Quelle geändert",
+        "es": "Sony Audio: fuente cambiada"
+      },
       "description": {
-        "en": "A demo motion sensor saw a person or an animal move.",
-        "fr": "Un détecteur de démonstration a vu bouger une personne ou un animal."
+        "en": "The input in use changed: the TV over HDMI, a console, Bluetooth, from the remote, the TV or Gladys.",
+        "fr": "L'entrée utilisée a changé : la TV en HDMI, une console, le Bluetooth, depuis la télécommande, la TV ou Gladys.",
+        "de": "Der genutzte Eingang hat sich geändert: der Fernseher über HDMI, eine Konsole, Bluetooth, per Fernbedienung, Fernseher oder Gladys.",
+        "es": "La entrada en uso ha cambiado: el televisor por HDMI, una consola, Bluetooth, desde el mando, el televisor o Gladys."
       },
       "fields": [
         {
           "key": "device",
           "type": "select",
           "source": "devices",
-          "label": { "en": "Sensor", "fr": "Détecteur" }
+          "label": { "en": "Device", "fr": "Appareil", "de": "Gerät", "es": "Dispositivo" }
         },
         {
-          "key": "target",
-          "type": "multi_select",
-          "label": { "en": "What moved", "fr": "Ce qui a bougé" },
-          "options": [
-            { "value": "person", "label": { "en": "Person", "fr": "Personne" } },
-            { "value": "animal", "label": { "en": "Animal", "fr": "Animal" } }
-          ]
+          "key": "source",
+          "type": "string",
+          "label": {
+            "en": "New source (optional)",
+            "fr": "Nouvelle source (facultatif)",
+            "de": "Neue Quelle (optional)",
+            "es": "Nueva fuente (opcional)"
+          },
+          "description": {
+            "en": "Exactly as shown in the source list of the device, e.g. HDMI 1. Empty: any source.",
+            "fr": "Exactement comme dans la liste des sources de l'appareil, ex. HDMI 1. Vide : toute source.",
+            "de": "Genau wie in der Quellenliste des Geräts, z. B. HDMI 1. Leer: jede Quelle.",
+            "es": "Exactamente como en la lista de fuentes del dispositivo, p. ej. HDMI 1. Vacío: cualquier fuente."
+          }
         }
       ],
       "variables": [
         {
-          "key": "target",
+          "key": "device_name",
           "type": "string",
-          "label": { "en": "What moved", "fr": "Ce qui a bougé" }
+          "label": { "en": "Device", "fr": "Appareil", "de": "Gerät", "es": "Dispositivo" }
+        },
+        {
+          "key": "source",
+          "type": "string",
+          "label": {
+            "en": "New source",
+            "fr": "Nouvelle source",
+            "de": "Neue Quelle",
+            "es": "Nueva fuente"
+          }
+        },
+        {
+          "key": "previous_source",
+          "type": "string",
+          "label": {
+            "en": "Previous source",
+            "fr": "Source précédente",
+            "de": "Vorherige Quelle",
+            "es": "Fuente anterior"
+          }
         }
       ]
     }
   ],
   "scene_actions": [
     {
-      "key": "identify_device",
-      "label": { "en": "Identify a device", "fr": "Identifier un appareil" },
-      "description": {
-        "en": "Make a device signal itself (the demo light blinks).",
-        "fr": "Fait se signaler un appareil (la lampe de démonstration clignote)."
+      "key": "select_source",
+      "label": {
+        "en": "Sony Audio: choose a source",
+        "fr": "Sony Audio : choisir une source",
+        "de": "Sony Audio: Quelle wählen",
+        "es": "Sony Audio: elegir una fuente"
       },
-      "timeout_seconds": 15,
+      "description": {
+        "en": "By its name, as shown by the device. Turns the device on first if needed.",
+        "fr": "Par son nom, tel qu'affiché par l'appareil. Allume l'appareil d'abord si besoin.",
+        "de": "Nach ihrem Namen, wie das Gerät ihn zeigt. Schaltet das Gerät vorher ein, falls nötig.",
+        "es": "Por su nombre, tal como lo muestra el dispositivo. Enciende el dispositivo antes si es necesario."
+      },
+      "timeout_seconds": 30,
       "fields": [
         {
           "key": "device",
           "type": "select",
           "source": "devices",
-          "label": { "en": "Device", "fr": "Appareil" },
-          "required": true
+          "label": { "en": "Device", "fr": "Appareil", "de": "Gerät", "es": "Dispositivo" }
+        },
+        {
+          "key": "source",
+          "type": "string",
+          "required": true,
+          "label": { "en": "Source", "fr": "Source", "de": "Quelle", "es": "Fuente" },
+          "placeholder": {
+            "en": "e.g. TV, HDMI 1, Bluetooth",
+            "fr": "ex. TV, HDMI 1, Bluetooth",
+            "de": "z. B. TV, HDMI 1, Bluetooth",
+            "es": "p. ej. TV, HDMI 1, Bluetooth"
+          }
         }
       ],
       "outputs": [
         {
-          "key": "signalled",
-          "type": "boolean",
-          "label": { "en": "Device signalled", "fr": "Appareil signalé" }
+          "key": "source",
+          "type": "string",
+          "label": {
+            "en": "Source chosen",
+            "fr": "Source choisie",
+            "de": "Gewählte Quelle",
+            "es": "Fuente elegida"
+          }
+        }
+      ]
+    },
+    {
+      "key": "set_sound",
+      "label": {
+        "en": "Sony Audio: set the sound",
+        "fr": "Sony Audio : régler le son",
+        "de": "Sony Audio: Klang einstellen",
+        "es": "Sony Audio: ajustar el sonido"
+      },
+      "description": {
+        "en": "Sound mode, night mode, voice enhancement and volume in one step. Turns the device on first if needed.",
+        "fr": "Mode son, mode nuit, amélioration des voix et volume en une fois. Allume l'appareil d'abord si besoin.",
+        "de": "Klangmodus, Nachtmodus, Sprachverbesserung und Lautstärke in einem Schritt. Schaltet das Gerät vorher ein, falls nötig.",
+        "es": "Modo de sonido, modo nocturno, mejora de voz y volumen en un paso. Enciende el dispositivo antes si es necesario."
+      },
+      "timeout_seconds": 30,
+      "fields": [
+        {
+          "key": "device",
+          "type": "select",
+          "source": "devices",
+          "label": { "en": "Device", "fr": "Appareil", "de": "Gerät", "es": "Dispositivo" }
+        },
+        {
+          "key": "sound_mode",
+          "type": "string",
+          "label": {
+            "en": "Sound mode (optional)",
+            "fr": "Mode son (facultatif)",
+            "de": "Klangmodus (optional)",
+            "es": "Modo de sonido (opcional)"
+          },
+          "placeholder": {
+            "en": "e.g. Cinema, Music",
+            "fr": "ex. Cinéma, Musique",
+            "de": "z. B. Kino, Musik",
+            "es": "p. ej. Cine, Música"
+          }
+        },
+        {
+          "key": "night_mode",
+          "type": "select",
+          "default": "unchanged",
+          "label": {
+            "en": "Night mode",
+            "fr": "Mode nuit",
+            "de": "Nachtmodus",
+            "es": "Modo nocturno"
+          },
+          "options": [
+            {
+              "value": "unchanged",
+              "label": {
+                "en": "Unchanged",
+                "fr": "Inchangé",
+                "de": "Unverändert",
+                "es": "Sin cambios"
+              }
+            },
+            {
+              "value": "on",
+              "label": { "en": "On", "fr": "Activé", "de": "An", "es": "Activado" }
+            },
+            {
+              "value": "off",
+              "label": { "en": "Off", "fr": "Désactivé", "de": "Aus", "es": "Desactivado" }
+            }
+          ]
+        },
+        {
+          "key": "voice",
+          "type": "select",
+          "default": "unchanged",
+          "label": {
+            "en": "Voice enhancement",
+            "fr": "Amélioration des voix",
+            "de": "Sprachverbesserung",
+            "es": "Mejora de voz"
+          },
+          "options": [
+            {
+              "value": "unchanged",
+              "label": {
+                "en": "Unchanged",
+                "fr": "Inchangé",
+                "de": "Unverändert",
+                "es": "Sin cambios"
+              }
+            },
+            {
+              "value": "on",
+              "label": { "en": "On", "fr": "Activé", "de": "An", "es": "Activado" }
+            },
+            {
+              "value": "off",
+              "label": { "en": "Off", "fr": "Désactivé", "de": "Aus", "es": "Desactivado" }
+            }
+          ]
+        },
+        {
+          "key": "volume",
+          "type": "number",
+          "min": 0,
+          "max": 100,
+          "label": {
+            "en": "Volume (optional)",
+            "fr": "Volume (facultatif)",
+            "de": "Lautstärke (optional)",
+            "es": "Volumen (opcional)"
+          },
+          "description": {
+            "en": "In the units of the device (often 0 to 50, or 0 to 100). Empty: unchanged.",
+            "fr": "Dans les unités de l'appareil (souvent 0 à 50, ou 0 à 100). Vide : inchangé.",
+            "de": "In den Einheiten des Geräts (oft 0 bis 50 oder 0 bis 100). Leer: unverändert.",
+            "es": "En las unidades del dispositivo (a menudo de 0 a 50, o de 0 a 100). Vacío: sin cambios."
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "key": "sound_mode",
+          "type": "string",
+          "label": {
+            "en": "Sound mode",
+            "fr": "Mode son",
+            "de": "Klangmodus",
+            "es": "Modo de sonido"
+          }
+        },
+        {
+          "key": "volume",
+          "type": "number",
+          "label": { "en": "Volume", "fr": "Volume", "de": "Lautstärke", "es": "Volumen" }
         }
       ]
     }
   ],
   "widgets": [
     {
-      "key": "demo_status",
-      "label": { "en": "Demo status", "fr": "État de la démo" },
-      "description": {
-        "en": "Live temperature and plug power, plug connection and observed location.",
-        "fr": "Température et puissance en direct, connexion de la prise, position observée."
+      "key": "remote",
+      "label": {
+        "en": "Sony Audio remote",
+        "fr": "Télécommande Sony Audio",
+        "de": "Sony-Audio-Fernbedienung",
+        "es": "Mando Sony Audio"
       },
-      "icon": "activity",
-      "action_timeout_seconds": 15
+      "description": {
+        "en": "State, source, sound mode and volume, with Power, Volume and Mute buttons.",
+        "fr": "État, source, mode son et volume, avec les boutons Marche, Volume et Muet.",
+        "de": "Zustand, Quelle, Klangmodus und Lautstärke, mit Tasten für Ein, Lautstärke und Stumm.",
+        "es": "Estado, fuente, modo de sonido y volumen, con botones de encendido, volumen y silencio."
+      },
+      "icon": "speaker",
+      "action_timeout_seconds": 20,
+      "settings": [
+        {
+          "key": "device",
+          "type": "select",
+          "source": "devices",
+          "label": { "en": "Device", "fr": "Appareil", "de": "Gerät", "es": "Dispositivo" }
+        }
+      ]
+    },
+    {
+      "key": "sources",
+      "label": {
+        "en": "Sony Audio sources",
+        "fr": "Sources Sony Audio",
+        "de": "Sony-Audio-Quellen",
+        "es": "Fuentes Sony Audio"
+      },
+      "description": {
+        "en": "Four favorite sources in one tap; the device turns on if needed.",
+        "fr": "Quatre sources favorites en un geste ; l'appareil s'allume si besoin.",
+        "de": "Vier Lieblingsquellen mit einem Tipp; das Gerät schaltet sich bei Bedarf ein.",
+        "es": "Cuatro fuentes favoritas en un toque; el dispositivo se enciende si hace falta."
+      },
+      "icon": "log-in",
+      "action_timeout_seconds": 30,
+      "settings": [
+        {
+          "key": "device",
+          "type": "select",
+          "source": "devices",
+          "label": { "en": "Device", "fr": "Appareil", "de": "Gerät", "es": "Dispositivo" }
+        },
+        {
+          "key": "source_1",
+          "type": "string",
+          "label": { "en": "Source 1", "fr": "Source 1", "de": "Quelle 1", "es": "Fuente 1" },
+          "placeholder": { "en": "e.g. TV", "fr": "ex. TV", "de": "z. B. TV", "es": "p. ej. TV" }
+        },
+        {
+          "key": "source_2",
+          "type": "string",
+          "label": { "en": "Source 2", "fr": "Source 2", "de": "Quelle 2", "es": "Fuente 2" },
+          "placeholder": {
+            "en": "e.g. HDMI 1",
+            "fr": "ex. HDMI 1",
+            "de": "z. B. HDMI 1",
+            "es": "p. ej. HDMI 1"
+          }
+        },
+        {
+          "key": "source_3",
+          "type": "string",
+          "label": { "en": "Source 3", "fr": "Source 3", "de": "Quelle 3", "es": "Fuente 3" },
+          "placeholder": {
+            "en": "e.g. Bluetooth",
+            "fr": "ex. Bluetooth",
+            "de": "z. B. Bluetooth",
+            "es": "p. ej. Bluetooth"
+          }
+        },
+        {
+          "key": "source_4",
+          "type": "string",
+          "label": { "en": "Source 4", "fr": "Source 4", "de": "Quelle 4", "es": "Fuente 4" },
+          "placeholder": {
+            "en": "e.g. Optical",
+            "fr": "ex. Optique",
+            "de": "z. B. Optisch",
+            "es": "p. ej. Óptica"
+          }
+        }
+      ]
     }
   ]
 }

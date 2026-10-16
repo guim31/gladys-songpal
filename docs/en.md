@@ -1,61 +1,146 @@
-# Demo Devices Template
+# Sony Audio
 
-This is the user documentation of the integration. Gladys re-hosts this file
-and shows a permanent **Documentation** link to it in the Configuration screen
-(in the user's language, with English as the fallback) — it is when
-configuring that the user needs it most. Keep the short onboarding hints in
-the `section` blocks of the manifest `config_schema`; put the long
-step-by-step (screenshots, troubleshooting…) here.
+Control your Sony sound bars, AV receivers and wireless speakers from Gladys, on your local
+network: power, volume, mute, source, sound mode, night mode, voice enhancement and subwoofer
+level, updated in real time.
 
-## What you get
+> Developed without the hardware: feedback welcome. Tell what works and what does not on
+> [github.com/guim31/gladys-songpal/issues](https://github.com/guim31/gladys-songpal/issues),
+> with the model of your device.
+>
+> This integration is not affiliated with, nor endorsed by, Sony.
 
-Six demo devices show up after installation: a weather station (real data
-from Open-Meteo), a switch, a dimmable light, a smart plug with power
-metering, a motion sensor and a camera.
+## Overview
 
-## Configuration
+The integration talks to the devices that work with the **Sony Music Center** app (formerly
+**SongPal**) through their local Audio Control API: sound bars (HT-A7000, HT-A5000, HT-ST5000,
+HT-ZF9, HT-XF9000, HT-NT5…), AV receivers (STR-DN1080, STR-AN1000, STR-AZ…), wireless speakers
+(SRS-X77, SRS-X99, SRS-ZR7…). No account, no cloud: everything stays on your network.
 
-1. Open the **Configuration** tab of the integration.
-2. Set the **latitude** and **longitude** the demo weather station should
-   observe (they default to Paris), and pick your temperature unit.
-   The **refresh interval** sets how often the weather station and the
-   plug's power are read: every 5 minutes by default, every minute at most.
-3. Save: the devices appear in the **Discovery** tab, ready to be added.
+- Found by the search of the **Discovery** tab (no address to type).
+- One Gladys device per product, with only the features it has.
+- Real-time updates: a change made with the remote, the TV or the Sony app shows in Gladys
+  within a second.
+- Two dashboard widgets, a scene trigger and two scene actions.
 
-The **Prefer the local connection** toggle drives the demo plug: it reports
-the channel it actually uses as a badge (local or cloud), with an orange dot
-when it runs degraded (local refused, cloud fallback).
+Sony Bravia TVs use the same API but are left to the **Sony Bravia TV** integration.
 
-## Actions
+## Requirements
 
-- **Test the weather provider** — performs a live request to Open-Meteo and
-  shows the current temperature and humidity under the button.
-- **Identify a device** — pick one of your devices in the list and it will
-  signal itself (the demo light "blinks" in the logs).
+- Gladys 5.1.0 or later.
+- The device connected to your network (Wi-Fi or Ethernet), set up once with the Sony Music
+  Center app.
+- **Network standby on** ("Network standby", "Quick start" or "Remote start", depending on the
+  model): without it the device leaves the network in standby, and Gladys cannot turn it on nor
+  see it.
+- Gladys and the device on the same network: the search uses SSDP (UPnP), relayed by Gladys.
+  Across subnets, type the address of the device in the configuration.
 
-## Scenes
+## Installation and configuration
 
-The integration adds its own cards to the scene editor (Gladys 5.1 or
-later), under the **Integrations** category:
+1. In Gladys, open **Integrations → Install from GitHub** and install
+   `https://github.com/guim31/gladys-songpal` (or install **Sony Audio** from the store).
+2. Turn your device on (not in standby) so that it gives its sources and sound settings.
+3. Open the **Discovery** tab of the integration and start a search. Each device found shows with
+   its features: add it to Gladys.
+4. Optional, in **Configuration**:
+   - **Addresses (optional)**: only for a device the search does not find, its IP address
+     (several separated by commas, e.g. `192.168.1.30, 192.168.1.31`). Give it a fixed address in
+     your router.
+   - **Refresh interval**: how often a device is read when it cannot send its changes (30 seconds
+     by default).
+   - **Volume step of the widget**: how much the **Volume −** and **Volume +** buttons change the
+     volume.
+   - **Language of the feature names**: the names given to the features of a new device, and the
+     language of the messages (French by default).
+5. **Test the connection** reads every known device and tells what it finds: on or in standby,
+   source, volume, and whether live updates work.
 
-- **Motion detected** (trigger) — starts the scene when a demo motion sensor
-  sees something move. Optionally pick the sensor and what moved (person,
-  animal); left empty, any detection matches. The following actions can
-  read what moved with `{{triggerEvent.data.target}}`.
-- **Identify a device** (action) — makes the chosen device signal itself.
-  It returns whether the device could signal itself, so the following
-  actions can depend on it.
+## Devices and features
 
-## Dashboard
+Each product is one device, identified by its MAC address (a new IP address given by your router
+keeps the same device: search again, it is found at its new address). Only the features the
+device has are created:
 
-Add the **Demo status** widget to a dashboard: it shows the live
-temperature of the weather station and the power of the office plug, the
-connection the plug currently uses (orange when degraded) and the observed
-location. Its **Identify the light** button makes the demo light signal
-itself.
+| Feature                                     | Gladys type          | What it does                                                                                                                                               |
+| ------------------------------------------- | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Power**                                   | switch (on/off)      | On / standby.                                                                                                                                              |
+| **Volume**                                  | music volume         | The volume, in the units of the device (often 0 to 50, 0 to 74 on a receiver).                                                                             |
+| **Mute**                                    | switch (on/off)      | Mute on / off.                                                                                                                                             |
+| **Source**                                  | list                 | The inputs of the device (HDMI, TV, optical, analog, Bluetooth…), with the names set on it. "Other (network, app)" while Spotify, Chromecast or USB plays. |
+| **Sound mode**                              | list                 | The sound fields of the device (Standard, Movie, Music…), or the equalizer presets of a speaker.                                                           |
+| **Night mode**                              | switch (on/off)      | Night mode of a sound bar.                                                                                                                                 |
+| **Voice enhancement**                       | switch, or list      | On/off, or the levels (Type 1, 2, 3) of the older sound bars.                                                                                              |
+| **Subwoofer level**                         | dimmer               | The level of the subwoofer, within the bounds of the device (in 0.5 dB steps on a receiver).                                                               |
+| **Play**, **Pause**, **Previous**, **Next** | music buttons        | On a network or USB source only: an input (HDMI, TV) plays whatever its device sends.                                                                      |
+| **Playback**                                | music playback state | Playing or paused, for the **Music** box of the dashboard.                                                                                                 |
+
+Choosing a source while the device is in standby turns it on first. A receiver is controlled on
+its main zone.
+
+## Widgets
+
+- **Sony Audio remote**: the device and its state, its source, sound mode and volume, with four
+  buttons: **Turn on** (or **Standby**), **Volume −**, **Volume +** and **Mute** (its icon is a
+  check mark while muted).
+- **Sony Audio sources**: four favorite sources in one tap, the device turned on if needed. Type
+  their names in the widget settings (e.g. `TV`, `HDMI 1`, `Bluetooth`); empty, the first
+  connected inputs. The source in use has a check mark.
+
+Choose the device in the settings of each widget (the first one otherwise).
+
+## Scene trigger
+
+**Sony Audio: source changed**: the input in use changed, whatever changed it: the TV over HDMI
+(turning the TV on often switches the sound bar to it), a console, the remote, the Sony app or
+Gladys. Turning the device on counts when it lands on another source than the last one.
+
+- Filters: the device, and the new source, written exactly as in the source list of the device
+  (e.g. `HDMI 1`; empty: any source).
+- Variables: the device name, the new source, the previous source.
+
+## Scene actions
+
+- **Sony Audio: choose a source**: by its name as the device shows it (`TV`, `HDMI 1`,
+  `Bluetooth`; case and spaces do not matter). Turns the device on first if needed. Returns the
+  source chosen.
+- **Sony Audio: set the sound**: in one step, the sound mode by its name (`Movie`, `Music`), night
+  mode and voice enhancement (on, off or unchanged), and the volume. Turns the device on first if
+  needed. Returns the sound mode and the volume.
+
+## Scene examples
+
+- **Movie night**: when the "Movie" scene runs, **Sony Audio: choose a source** `TV`, then **Sony
+  Audio: set the sound** with `Movie`, voice enhancement on and volume 18; dim the lights.
+- **Quiet at night**: every day at 22:00, if the sound bar is on, set **Night mode** on and the
+  **Subwoofer level** down.
+- **Console time**: with **Sony Audio: source changed** filtered on `HDMI 2`, turn on the lamp of
+  the TV cabinet and send a message "The console is on".
 
 ## Troubleshooting
 
-The integration logs everything it does: check the integration logs from the
-Gladys UI (or `docker logs` on the host) with `LOG_LEVEL=debug` for the full
-detail.
+- **The search finds nothing**: check that the device is on the same network as Gladys, with
+  network standby on, and that it shows in the Sony Music Center app. Your router may drop
+  multicast between Wi-Fi and Ethernet: type the address in **Addresses (optional)**.
+- **"does not answer (unplugged, or network standby off)"**: the device left the network. Turn on
+  network standby in its settings. Its Gladys device stays, its power shows off until it answers.
+- **No live updates** (the test says "live updates off"): the device does not accept the
+  WebSocket connection; it is read at the refresh interval instead. Nothing to change.
+- **A source or a sound mode is missing**: the lists are those the device gives when on. Turn it
+  on, then start a search again: the lists of an added device are updated without touching it.
+- **A feature appears after an update**: a device added while in standby had no sound settings
+  yet; the **Discovery** tab proposes to update it.
+- Logs: the integration writes little (start, devices lost and back, user actions). For more,
+  set `LOG_LEVEL=debug` on the integration.
+
+## Limits
+
+- Developed without the hardware: built from the Sony Audio Control API reference and the
+  open-source projects that use it. Some models may name their settings differently.
+- The device must stay on the network in standby to be turned on from Gladys (no Wake-on-LAN).
+- Only the main zone of a receiver; no multi-room groups, no presets, no browsing of the network
+  services, no equalizer bands.
+- Play and pause depend on the source: an HDMI or TV input cannot be paused from the sound bar.
+- The device is read at most every 10 seconds when it cannot notify, every 5 minutes otherwise;
+  the API is local, without quota.
+- Bravia TVs are left to the Sony Bravia TV integration.
