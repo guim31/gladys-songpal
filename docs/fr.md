@@ -1,67 +1,155 @@
-# Template de démonstration
+# Sony Audio
 
-Ceci est la documentation utilisateur de l'intégration. Gladys ré-héberge ce
-fichier et affiche un lien **Documentation** permanent vers lui dans l'écran
-de configuration (dans la langue de l'utilisateur, avec l'anglais en repli) —
-c'est au moment de configurer que l'utilisateur en a le plus besoin. Gardez
-les courtes indications d'accueil dans les blocs `section` du `config_schema`
-du manifest ; mettez ici le pas-à-pas détaillé (captures d'écran, dépannage…).
+Pilotez vos barres de son, amplis audio-vidéo et enceintes sans fil Sony depuis Gladys, sur votre
+réseau local : marche, volume, sourdine, source, mode son, mode nuit, amélioration des voix et
+niveau du caisson, mis à jour en direct.
 
-## Ce que vous obtenez
+> Développée sans le matériel : vos retours sont les bienvenus. Dites ce qui marche et ce qui ne
+> marche pas sur
+> [github.com/guim31/gladys-songpal/issues](https://github.com/guim31/gladys-songpal/issues), avec
+> le modèle de votre appareil.
+>
+> Cette intégration n'est ni affiliée à Sony, ni approuvée par Sony.
 
-Six appareils de démonstration apparaissent après l'installation : une
-station météo (vraies données Open-Meteo), un interrupteur, une lampe
-variable, une prise connectée avec mesure de puissance, un détecteur de
-mouvement et une caméra.
+## Présentation
 
-## Configuration
+L'intégration dialogue avec les appareils compatibles avec l'application **Sony Music Center**
+(anciennement **SongPal**) par leur API locale Audio Control : barres de son (HT-A7000, HT-A5000,
+HT-ST5000, HT-ZF9, HT-XF9000, HT-NT5…), amplis audio-vidéo (STR-DN1080, STR-AN1000, STR-AZ…),
+enceintes sans fil (SRS-X77, SRS-X99, SRS-ZR7…). Ni compte ni cloud : tout reste sur votre réseau.
 
-1. Ouvrez l'onglet **Configuration** de l'intégration.
-2. Renseignez la **latitude** et la **longitude** que la station météo de
-   démonstration doit observer (Paris par défaut), et choisissez votre unité
-   de température. L'**intervalle de rafraîchissement** règle la fréquence
-   de lecture de la station météo et de la puissance de la prise : toutes
-   les 5 minutes par défaut, toutes les minutes au plus.
-3. Enregistrez : les appareils apparaissent dans l'onglet **Découverte**,
-   prêts à être ajoutés.
+- Trouvés par la recherche de l'onglet **Découverte** (aucune adresse à saisir).
+- Un appareil Gladys par produit, avec seulement les fonctionnalités qu'il possède.
+- Mises à jour en direct : un changement fait à la télécommande, depuis la TV ou l'application Sony
+  apparaît dans Gladys en moins d'une seconde.
+- Deux widgets de tableau de bord, un déclencheur et deux actions de scène.
 
-Le réglage **Préférer la connexion locale** pilote la prise de
-démonstration : elle affiche en badge le canal réellement utilisé (local ou
-cloud), avec un point orange quand elle fonctionne en mode dégradé (local
-refusé, bascule cloud).
+Les téléviseurs Sony Bravia utilisent la même API mais sont laissés à l'intégration **Sony Bravia
+TV**.
 
-## Actions
+## Prérequis
 
-- **Tester le fournisseur météo** — effectue une requête en direct vers
-  Open-Meteo et affiche la température et l'humidité actuelles sous le
-  bouton.
-- **Identifier un appareil** — choisissez un de vos appareils dans la liste
-  et il se signale (la lampe de démonstration « clignote » dans les logs).
+- Gladys 5.1.0 ou plus récent.
+- L'appareil connecté à votre réseau (Wi-Fi ou Ethernet), configuré une fois avec l'application
+  Sony Music Center.
+- **Veille réseau activée** (« Veille réseau », « Démarrage rapide » ou « Démarrage à distance »
+  selon le modèle) : sans elle, l'appareil quitte le réseau en veille, et Gladys ne peut ni
+  l'allumer ni le voir.
+- Gladys et l'appareil sur le même réseau : la recherche passe par SSDP (UPnP), relayé par Gladys.
+  D'un sous-réseau à l'autre, saisissez l'adresse de l'appareil dans la configuration.
 
-## Scènes
+## Installation et configuration
 
-L'intégration ajoute ses propres cartes à l'éditeur de scènes (Gladys 5.1
-ou plus récent), dans la catégorie **Intégrations** :
+1. Dans Gladys, ouvrez **Intégrations → Installer depuis GitHub** et installez
+   `https://github.com/guim31/gladys-songpal` (ou installez **Sony Audio** depuis le store).
+2. Allumez votre appareil (pas en veille) pour qu'il donne ses sources et ses réglages de son.
+3. Ouvrez l'onglet **Découverte** de l'intégration et lancez une recherche. Chaque appareil trouvé
+   s'affiche avec ses fonctionnalités : ajoutez-le à Gladys.
+4. Facultatif, dans **Configuration** :
+   - **Adresses (facultatif)** : seulement pour un appareil que la recherche ne trouve pas, son
+     adresse IP (plusieurs séparées par des virgules, ex. `192.168.1.30, 192.168.1.31`). Fixez-la
+     dans votre box ou routeur.
+   - **Intervalle de lecture** : la fréquence de lecture d'un appareil quand il ne peut pas envoyer
+     ses changements (30 secondes par défaut).
+   - **Pas de volume du widget** : de combien les boutons **Volume −** et **Volume +** changent le
+     volume.
+   - **Langue des noms de fonctionnalités** : les noms donnés aux fonctionnalités d'un nouvel
+     appareil, et la langue des messages (français par défaut).
+5. **Tester la connexion** lit chaque appareil connu et dit ce qu'il trouve : allumé ou en veille,
+   source, volume, et si les mises à jour en direct fonctionnent.
 
-- **Mouvement détecté** (déclencheur) — lance la scène quand un détecteur
-  de démonstration voit bouger quelque chose. Choisissez éventuellement le
-  détecteur et ce qui a bougé (personne, animal) ; laissés vides, toute
-  détection correspond. Les actions suivantes peuvent lire ce qui a bougé
-  avec `{{triggerEvent.data.target}}`.
-- **Identifier un appareil** (action) — fait se signaler l'appareil choisi.
-  Elle indique si l'appareil a pu se signaler, pour que les actions
-  suivantes puissent en dépendre.
+## Appareils et fonctionnalités
 
-## Tableau de bord
+Chaque produit est un appareil, identifié par son adresse MAC (une nouvelle adresse IP donnée par
+votre box garde le même appareil : relancez une recherche, il est retrouvé à sa nouvelle adresse).
+Seules les fonctionnalités que l'appareil possède sont créées :
 
-Ajoutez le widget **État de la démo** à un tableau de bord : il affiche en
-direct la température de la station météo et la puissance de la prise du
-bureau, la connexion utilisée par la prise (en orange si dégradée) et la
-position observée. Son bouton **Identifier la lampe** fait se signaler la
-lampe de démonstration.
+| Fonctionnalité                                     | Type Gladys             | Ce qu'elle fait                                                                                                                                                     |
+| -------------------------------------------------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Marche / veille**                                | interrupteur            | Allumé / en veille.                                                                                                                                                 |
+| **Volume**                                         | volume de la musique    | Le volume, dans les unités de l'appareil (souvent 0 à 50, 0 à 74 sur un ampli).                                                                                     |
+| **Muet**                                           | interrupteur            | Sourdine activée / désactivée.                                                                                                                                      |
+| **Source**                                         | liste                   | Les entrées de l'appareil (HDMI, TV, optique, analogique, Bluetooth…), avec les noms réglés dessus. « Autre (réseau, appli) » pendant Spotify, Chromecast ou l'USB. |
+| **Mode son**                                       | liste                   | Les modes son de l'appareil (Standard, Cinéma, Musique…), ou les préréglages d'égaliseur d'une enceinte.                                                            |
+| **Mode nuit**                                      | interrupteur            | Le mode nuit d'une barre de son.                                                                                                                                    |
+| **Amélioration des voix**                          | interrupteur, ou liste  | Activée/désactivée, ou les niveaux (Type 1, 2, 3) des barres de son plus anciennes.                                                                                 |
+| **Niveau du caisson**                              | variateur               | Le niveau du caisson de basses, dans les bornes de l'appareil (par pas de 0,5 dB sur un ampli).                                                                     |
+| **Lecture**, **Pause**, **Précédent**, **Suivant** | boutons de musique      | Sur une source réseau ou USB seulement : une entrée (HDMI, TV) joue ce que son appareil envoie.                                                                     |
+| **Lecture en cours**                               | état de lecture musique | En lecture ou en pause, pour la boîte **Musique** du tableau de bord.                                                                                               |
+
+Choisir une source pendant que l'appareil est en veille l'allume d'abord. Un ampli est piloté sur
+sa zone principale.
+
+## Widgets
+
+- **Télécommande Sony Audio** : l'appareil et son état, sa source, son mode son et son volume, avec
+  quatre boutons : **Allumer** (ou **Veille**), **Volume −**, **Volume +** et **Muet** (son icône
+  est une coche pendant la sourdine).
+- **Sources Sony Audio** : quatre sources favorites en un geste, l'appareil allumé si besoin.
+  Saisissez leurs noms dans les réglages du widget (ex. `TV`, `HDMI 1`, `Bluetooth`) ; vides, les
+  premières entrées connectées. La source utilisée porte une coche.
+
+Choisissez l'appareil dans les réglages de chaque widget (le premier sinon).
+
+## Déclencheur de scène
+
+**Sony Audio : source changée** : l'entrée utilisée a changé, quoi qu'il l'ait changée : la TV en
+HDMI (allumer la TV bascule souvent la barre de son sur elle), une console, la télécommande,
+l'application Sony ou Gladys. L'allumage compte quand l'appareil arrive sur une autre source que la
+dernière.
+
+- Filtres : l'appareil, et la nouvelle source, écrite exactement comme dans la liste des sources de
+  l'appareil (ex. `HDMI 1` ; vide : toute source).
+- Variables : le nom de l'appareil, la nouvelle source, la source précédente.
+
+## Actions de scène
+
+- **Sony Audio : choisir une source** : par son nom tel que l'appareil l'affiche (`TV`, `HDMI 1`,
+  `Bluetooth` ; majuscules et espaces indifférents). Allume l'appareil d'abord si besoin. Renvoie
+  la source choisie.
+- **Sony Audio : régler le son** : en une fois, le mode son par son nom (`Movie`, `Music`), le mode
+  nuit et l'amélioration des voix (activé, désactivé ou inchangé), et le volume. Allume l'appareil
+  d'abord si besoin. Renvoie le mode son et le volume.
+
+## Exemples de scènes
+
+- **Soirée cinéma** : quand la scène « Film » se lance, **Sony Audio : choisir une source** `TV`,
+  puis **Sony Audio : régler le son** avec `Movie`, amélioration des voix activée et volume 18 ;
+  baissez les lumières.
+- **Calme la nuit** : chaque jour à 22 h, si la barre de son est allumée, activez le **Mode nuit**
+  et baissez le **Niveau du caisson**.
+- **L'heure de la console** : avec **Sony Audio : source changée** filtré sur `HDMI 2`, allumez la
+  lampe du meuble TV et envoyez le message « La console est allumée ».
 
 ## Dépannage
 
-L'intégration journalise tout ce qu'elle fait : consultez les logs de
-l'intégration depuis l'interface Gladys (ou `docker logs` sur l'hôte) avec
-`LOG_LEVEL=debug` pour le détail complet.
+- **La recherche ne trouve rien** : vérifiez que l'appareil est sur le même réseau que Gladys, avec
+  la veille réseau activée, et qu'il apparaît dans l'application Sony Music Center. Votre box peut
+  bloquer le multicast entre Wi-Fi et Ethernet : saisissez l'adresse dans **Adresses
+  (facultatif)**.
+- **« ne répond pas (débranché, ou veille réseau désactivée) »** : l'appareil a quitté le réseau.
+  Activez la veille réseau dans ses réglages. Son appareil Gladys reste, sa marche s'affiche éteinte
+  jusqu'à ce qu'il réponde.
+- **Pas de mises à jour en direct** (le test dit « pas de mises à jour en direct ») : l'appareil
+  refuse la connexion WebSocket ; il est lu à l'intervalle de lecture à la place. Rien à changer.
+- **Une source ou un mode son manque** : les listes sont celles que l'appareil donne quand il est
+  allumé. Allumez-le, puis relancez une recherche : les listes d'un appareil ajouté sont mises à
+  jour sans y toucher.
+- **Une fonctionnalité apparaît après une mise à jour** : un appareil ajouté en veille n'avait pas
+  encore ses réglages de son ; l'onglet **Découverte** propose de le mettre à jour.
+- Journaux : l'intégration écrit peu (démarrage, appareils perdus et retrouvés, actions de
+  l'utilisateur). Pour plus de détails, réglez `LOG_LEVEL=debug` sur l'intégration.
+
+## Limites
+
+- Développée sans le matériel : construite d'après la documentation de l'API Sony Audio Control et
+  les projets libres qui l'utilisent. Certains modèles peuvent nommer leurs réglages autrement.
+- L'appareil doit rester sur le réseau en veille pour être allumé depuis Gladys (pas de
+  Wake-on-LAN).
+- Seulement la zone principale d'un ampli ; ni groupes multiroom, ni favoris, ni navigation dans
+  les services réseau, ni bandes d'égaliseur.
+- Lecture et pause dépendent de la source : une entrée HDMI ou TV ne se met pas en pause depuis la
+  barre de son.
+- L'appareil est lu au plus toutes les 10 secondes quand il ne peut pas notifier, toutes les
+  5 minutes sinon ; l'API est locale, sans quota.
+- Les téléviseurs Bravia sont laissés à l'intégration Sony Bravia TV.

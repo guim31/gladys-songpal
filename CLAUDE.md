@@ -31,16 +31,28 @@ pushing.
 ## Architecture
 
 ```
-index.js                          SDK wiring only: handlers registered before connect()
-src/devices/index.js              registry of the device blueprints + dispatch helpers
-src/devices/<type>.js             one device type per file (buildDevice, onPoll, onSetValue...)
+index.js                          SDK wiring only: registerHandlers(), shutdown, connect()
+src/app.js                        every SDK handler, registered before connect(), on the hub
+src/hub.js                        records (one per device), own read timer, notifications,
+                                  commands, search, scene event, connection badge, report
+src/devices.js                    feature keys and names (4 languages), buildDevice, featureValues
+src/songpal/client.js             JSON-RPC client of the Audio Control API (versions, errors)
+src/songpal/model.js              what the answers mean (identity, volume, sources, settings)
+src/songpal/notifier.js           WebSocket notifications per service, with retries
+src/songpal/discovery.js          SSDP answers and UPnP descriptions (mediated search)
+src/songpal/http.js               the one HTTP function (node:http), the seam of the tests
 src/scenes.js                     scene action handlers (manifest `scene_actions`)
 src/widgets.js                    dashboard widget handlers (manifest `widgets`)
+src/texts.js                      messages, errors, report (4 languages)
 src/config.js                     DEFAULT_CONFIG (mirrors the manifest defaults) + normalization
-src/weather.js                    example driver (Open-Meteo)
+src/store.js, src/issues.js       /data persistence; failures logged once
+scripts/probe.mjs                 read-only probe of a real device (no Gladys needed)
 gladys-assistant-integration.json manifest: name, config_schema, actions, image...
-docs/en.md, docs/fr.md            user documentation, re-hosted by Gladys (mandatory)
+docs/{en,fr,de,es}.md             user documentation, re-hosted by Gladys (same sections)
 test/                             node --test, against the SDK's fake Gladys (integration-sdk/testing)
+test/helpers/fakeSongpal.js       in-memory device (JSON-RPC + notifications) from the fixtures
+test/helpers/songpalServer.js     the same over real HTTP + WebSocket (`ws`, dev only)
+test/fixtures/songpal/            answers of four device families and a Bravia TV
 .github/scripts/release.mjs       release helpers (manifest bump, changelog), tested in test/
 ```
 
@@ -63,15 +75,18 @@ test/                             node --test, against the SDK's fake Gladys (in
   Never write a version heading: the Release workflow moves the section, and it
   becomes the notes of the GitHub Release.
 - **Manifest.** Texts are multi-language objects `{ "en": ..., "fr": ... }`:
-  `label`, `description` and `placeholder` alike, never a plain string. The
+  `label`, `description` and `placeholder` alike, never a plain string, in the
+  four languages. The
   catalog `description` holds 10 to 100 characters per language. A field the
   older cores do not know needs a higher `gladys_version` minimum
   (`categories`: 4.86.0; `widgets`, `scene_triggers`, `scene_actions`,
   `type: "provider"`: 5.1.0). `test/manifest.test.js` ties the manifest to the
   code (defaults, action, scene and widget handlers): change both sides
   together.
-- **User-facing text** is bilingual (English and French): action messages,
-  manifest texts, and `docs/en.md` / `docs/fr.md`, kept in sync.
+- **User-facing text** is in four languages (English, French, German with
+  "du", Spanish with "usted"): action messages, manifest texts, feature names,
+  widget contents, and `docs/en.md`, `fr.md`, `de.md`, `es.md`, kept in sync
+  (`test/i18n.test.js`).
 - **Style.** Prettier formats, ESLint catches mistakes. Comments explain why,
   in English. Tests never touch the network.
 
@@ -233,3 +248,58 @@ long, et sur un « Sie »/« Ihr… » de politesse en allemand. Le store exige 
 - Docs `en`, `fr`, `de`, `es` avec les mêmes sections.
 - Chauffe, ouverture, sécurité : ne rien rendre pilotable « comme un thermostat » ou par un assistant
   vocal quand une erreur serait dangereuse (leçon d'OctoPrint).
+
+## Sony Audio / Songpal (propre à cette intégration)
+
+**API** (référence Sony « Audio Control API », developer.sony.com, injoignable depuis les sessions ;
+lue dans python-songpal, GPL : lecture seule, et dans l'intégration HA `songpal`, Apache-2.0) :
+
+- JSON-RPC `POST http://<ip>:10000/sony/<service>` (`guide`, `system`, `audio`, `avContent`),
+  corps `{ method, id, params: [...], version }`, réponse `{ result }` ou `{ error: [code, texte] }`
+  **avec un HTTP 200**. Aucune authentification. `params` vaut `[]` sans paramètre, `[{…}]` sinon.
+- `guide.getSupportedApiInfo` (`params: [{}]`) liste services, versions de chaque méthode et
+  notifications : appeler chaque méthode dans la version la plus récente connue des deux côtés.
+  Un ampli peut ne lister que `1.3` pour `getSystemInformation` : prendre alors la plus haute
+  listée. Le `guide` d'un HT-ZF9 ne déclare que `websocket:jsonizer` mais répond en POST.
+- Les listes arrivent en `result: [[…]]` (volume, réglages, entrées, lecture), les objets en
+  `result: [{…}]`. `currentValue` des réglages est une **chaîne** (`"-2.5"`).
+- Codes : 7 Illegal State (en veille, ou une pause sur une entrée HDMI), 12/14/15 méthode,
+  version, opération inconnues, **40000 « Request retry » sur `setPowerStatus` = déjà dans cet
+  état : succès** (comme HA).
+- **`notifySettingsUpdate` est sur le service `system`**, pas `audio` (HT-ZF9, STR-DN1080) ; la
+  valeur est dans `apiMappingUpdate.{target,currentValue}`. `notifyVolumeInformation` sur `audio`,
+  `notifyPlayingContentInfo` et `notifyExternalTerminalStatus` sur `avContent`. Une socket par
+  service, `switchNotifications` `{ enabled: [{ name, version }] }`, sans ping de l'appareil.
+- Réglages : `soundField` (mode son, enum), `nightMode` (booleanTarget on/off), `voice` (on/off
+  sur les barres récentes, `type1`…`type3`/`off` sur les anciennes), `subwooferLevel`
+  (`integerTarget` dans `getSoundSettings` sur une barre, `doubleNumberTarget` par 0,5 dB dans
+  **`getSpeakerSettings`** sur un ampli). Une enceinte SRS met ses préréglages d'égaliseur dans
+  `soundField`.
+- Entrées : `getCurrentExternalTerminalsStatus` mêle entrées et **zones de sortie** des amplis
+  (`meta:zone:output`, `extOutput:zone?zone=N`) et des entrées cachées (titre vide) : les écarter.
+  Le nom affiché est le `label` réglé sur l'appareil, sinon le `title`. La source en cours est
+  l'`uri` de `getPlayingContentInfo` (zone 1 sur un ampli), sinon l'entrée `active`.
+- Identité : `macAddr`, sinon `wirelessMacAddr` (vide sur une enceinte en Wi-Fi), sinon
+  `serialNumber`. Garder toutes les MAC pour reconnaître le même matériel à une autre adresse.
+- Les Bravia parlent la même API (service `videoScreen`, `productCategory: "tv"`) : les écarter,
+  ils relèvent de gladys-sony-bravia.
+- `pausePlayingContent` **bascule** lecture/pause (hypothèse non vérifiée sur matériel) : ne
+  l'envoyer que si l'état diffère, et jamais sur une entrée (`contentKind: "input"`).
+
+**Pièges du cœur rencontrés ici**
+
+- La boîte **Musique** du front cherche les fonctionnalités par **type seul** et lit
+  `playback_state.last_value` sans garde : un appareil qui publie `music/play` doit publier aussi
+  `pause`, `previous`, `next`, `volume` et `playback_state`, sinon la boîte plante. Et **un seul
+  type `volume`** par appareil (`television/volume` partage le type de `music/volume`) : le
+  caisson est un `switch/dimmer`.
+- Une ligne du tableau de bord affiche le **nom de l'appareil** (pas celui de la fonctionnalité)
+  quand le type est seul sur l'appareil (`shouldDisplayDeviceName`, comparaison sur le type seul) :
+  volume et caisson s'affichent sous le nom de l'appareil ; l'utilisateur peut renommer la ligne
+  (`new_label`).
+- Un appareil vu d'abord **en veille** n'a ni sources ni réglages : le hub sonde quand même les
+  listes une fois (certains modèles répondent), et `select_source` allume puis relit avant de
+  conclure « source inconnue ».
+- `node --test` lance aussi `test/helpers/*.js` : `songpalServer.js` vérifie `NODE_TEST_CONTEXT`
+  avant d'ouvrir un port. Fermer un serveur de test exige `closeAllConnections()` (keep-alive du
+  client HTTP de Node, sockets WebSocket), sinon le test ne finit jamais.

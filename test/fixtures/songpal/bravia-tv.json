@@ -1,0 +1,102 @@
+{
+  "address": "192.0.2.40",
+  "location": "http://192.0.2.40:52323/dmr.xml",
+  "description": "<?xml version=\"1.0\"?>\n<root xmlns=\"urn:schemas-upnp-org:device-1-0\" xmlns:av=\"urn:schemas-sony-com:av\"><specVersion><major>1</major><minor>0</minor></specVersion><device><deviceType>urn:schemas-upnp-org:device:MediaRenderer:1</deviceType><friendlyName>BRAVIA KD-55XF9005</friendlyName><manufacturer>Sony Corporation</manufacturer><manufacturerURL>http://www.sony.net/</manufacturerURL><modelName>KD-55XF9005</modelName><UDN>uuid:00000000-0000-1010-8000-00005e005370</UDN><av:X_ScalarWebAPI_DeviceInfo><av:X_ScalarWebAPI_Version>1.0</av:X_ScalarWebAPI_Version><av:X_ScalarWebAPI_BaseURL>http://192.0.2.40:10000/sony</av:X_ScalarWebAPI_BaseURL><av:X_ScalarWebAPI_ServiceList><av:X_ScalarWebAPI_ServiceType>guide</av:X_ScalarWebAPI_ServiceType><av:X_ScalarWebAPI_ServiceType>system</av:X_ScalarWebAPI_ServiceType><av:X_ScalarWebAPI_ServiceType>audio</av:X_ScalarWebAPI_ServiceType><av:X_ScalarWebAPI_ServiceType>avContent</av:X_ScalarWebAPI_ServiceType><av:X_ScalarWebAPI_ServiceType>videoScreen</av:X_ScalarWebAPI_ServiceType><av:X_ScalarWebAPI_ServiceType>appControl</av:X_ScalarWebAPI_ServiceType></av:X_ScalarWebAPI_ServiceList></av:X_ScalarWebAPI_DeviceInfo><serviceList><service><serviceType>urn:schemas-sony-com:service:ScalarWebAPI:1</serviceType><serviceId>urn:schemas-sony-com:serviceId:ScalarWebAPI</serviceId><SCPDURL>/ScalarWebAPI.xml</SCPDURL><controlURL>/ScalarWebAPI/control</controlURL><eventSubURL></eventSubURL></service></serviceList></device></root>\n",
+  "responses": {
+    "guide.getSupportedApiInfo": {
+      "id": 1,
+      "result": [
+        [
+          {
+            "service": "guide",
+            "protocols": ["xhrpost:jsonizer"],
+            "apis": [
+              {
+                "name": "getSupportedApiInfo",
+                "versions": [
+                  {
+                    "version": "1.0"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "service": "system",
+            "protocols": ["xhrpost:jsonizer"],
+            "apis": [
+              {
+                "name": "getPowerStatus",
+                "versions": [
+                  {
+                    "version": "1.0"
+                  }
+                ]
+              },
+              {
+                "name": "getSystemInformation",
+                "versions": [
+                  {
+                    "version": "1.0"
+                  }
+                ]
+              },
+              {
+                "name": "getInterfaceInformation",
+                "versions": [
+                  {
+                    "version": "1.0"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "service": "videoScreen",
+            "protocols": ["xhrpost:jsonizer"],
+            "apis": [
+              {
+                "name": "setSceneSetting",
+                "versions": [
+                  {
+                    "version": "1.0"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      ]
+    },
+    "system.getPowerStatus": {
+      "id": 2,
+      "result": [
+        {
+          "status": "active"
+        }
+      ]
+    },
+    "system.getSystemInformation": {
+      "id": 3,
+      "result": [
+        {
+          "product": "TV",
+          "model": "KD-55XF9005",
+          "macAddr": "00:00:5e:00:53:70"
+        }
+      ]
+    },
+    "system.getInterfaceInformation": {
+      "id": 4,
+      "result": [
+        {
+          "productCategory": "tv",
+          "productName": "BRAVIA",
+          "modelName": "KD-55XF9005",
+          "serverName": "",
+          "interfaceVersion": "5.0.1"
+        }
+      ]
+    }
+  }
+}

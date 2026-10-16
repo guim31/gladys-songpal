@@ -1,45 +1,106 @@
 // -----------------------------------------------------------------------------
-// Integration configuration.
+// Integration configuration: defaults (they mirror the `default` values of the
+// manifest `config_schema`, see test/manifest.test.js) and normalization, so
+// the rest of the code never deals with strings, blanks or `undefined`.
 //
-// The configuration is filled in by the user in Gladys, from the `config_schema`
-// declared in `gladys-assistant-integration.json`. The SDK fetches it for you
-// (`gladys.getConfig()`) and notifies you of every change through
-// `gladys.onConfigUpdated()`.
-//
-// This module only provides defaults and normalizes the received object, so the
-// rest of the code never has to deal with `undefined`.
+// Most devices are found by the search of the Discovery tab (SSDP through the
+// core). The `hosts` field only lists the devices the search cannot see (an
+// other subnet, a router that drops multicast): their addresses, separated by
+// commas. The address only says where to reach a device: its identity is the
+// MAC address it gives (src/devices.js).
 // -----------------------------------------------------------------------------
 
-// Defaults: they MUST stay consistent with the `default` values declared in the
-// `config_schema` of the manifest.
+export const LANGUAGES = ['en', 'fr', 'de', 'es'];
+
+// Refresh intervals offered in the configuration, in seconds. While a device
+// sends its notifications (WebSocket), it is read far less often (src/hub.js).
+export const POLL_INTERVALS = ['10', '30', '60', '300'];
+
+// Steps of the volume buttons of the widget, in volume units of the device.
+export const VOLUME_STEPS = ['1', '2', '5'];
+
 export const DEFAULT_CONFIG = {
-  latitude: 48.8566, // Paris
-  longitude: 2.3522,
-  unit: 'celsius', // 'celsius' | 'fahrenheit'
-  // Seconds between two reads of the polled sensors. Gladys polls at most once
-  // a minute: slower intervals are applied by skipping polls (see
-  // createPoller in src/devices/index.js).
-  poll_frequency: 300,
-  // Reserved key (NOT in config_schema): because the manifest declares both
-  // 'local' and 'cloud' in its `transports` field, Gladys shows a standard
-  // "Prefer the local connection" toggle and sends the user's choice here.
-  // Read-only for the integration; defaults to true.
-  GLADYS_PREFER_LOCAL: true,
+  hosts: '',
+  poll_interval: '30',
+  volume_step: '2',
+  language: 'fr',
 };
 
+// The Audio Control API listens on this port, under /sony.
+export const DEFAULT_PORT = 10000;
+export const MAX_HOSTS = 10;
+
 /**
- * Merge the user config with the defaults.
- * @param {Record<string, unknown>} raw config returned by the SDK
+ * Parse one address typed by the user into the base URL of the API: a bare
+ * host or IP (`192.0.2.10`, `192.0.2.10:10000`) or a URL
+ * (`http://192.0.2.10:10000/sony`). Port 10000 and path /sony by default.
+ * @param {unknown} raw
+ * @returns {string|null} `http://host:port/sony`, null when unusable
+ */
+export function parseEndpoint(raw) {
+  if (typeof raw !== 'string') {
+    return null;
+  }
+  const text = raw.trim();
+  if (!text) {
+    return null;
+  }
+  const hasScheme = /^[a-z][a-z0-9+.-]*:\/\//i.test(text);
+  let url;
+  try {
+    url = new URL(hasScheme ? text : `http://${text}`);
+  } catch {
+    return null;
+  }
+  // The API is plain HTTP; credentials in the address would end up in the
+  // logs and the device params.
+  if (url.protocol !== 'http:' || !url.hostname || url.username || url.password) {
+    return null;
+  }
+  const port = url.port || String(DEFAULT_PORT);
+  const path = url.pathname.replace(/\/+$/, '') || '/sony';
+  return `http://${url.hostname}:${port}${path}`;
+}
+
+/** The host part of an endpoint, as shown to the user (`192.0.2.10`). */
+export function hostOf(endpoint) {
+  try {
+    return new URL(endpoint).hostname;
+  } catch {
+    return String(endpoint);
+  }
+}
+
+/**
+ * @param {Record<string, unknown>} raw the configuration returned by the SDK
  */
 export function normalizeConfig(raw = {}) {
+  const source = raw && typeof raw === 'object' ? raw : {};
+  const pick = (key, list) => {
+    const value = source[key] === undefined || source[key] === null ? '' : String(source[key]);
+    return list.includes(value) ? value : DEFAULT_CONFIG[key];
+  };
+
+  const hosts = [];
+  const invalidHosts = [];
+  const typed = typeof source.hosts === 'string' ? source.hosts : '';
+  for (const entry of typed.split(/[\s,;]+/)) {
+    if (!entry) {
+      continue;
+    }
+    const endpoint = parseEndpoint(entry);
+    if (!endpoint) {
+      invalidHosts.push(entry.slice(0, 60));
+    } else if (!hosts.includes(endpoint) && hosts.length < MAX_HOSTS) {
+      hosts.push(endpoint);
+    }
+  }
+
   return {
-    ...DEFAULT_CONFIG,
-    ...raw,
-    // Force the types: config may arrive as strings from a form.
-    latitude: Number(raw.latitude ?? DEFAULT_CONFIG.latitude),
-    longitude: Number(raw.longitude ?? DEFAULT_CONFIG.longitude),
-    poll_frequency: Number(raw.poll_frequency ?? DEFAULT_CONFIG.poll_frequency),
-    // The preference is a boolean; anything but an explicit false means true.
-    GLADYS_PREFER_LOCAL: raw.GLADYS_PREFER_LOCAL !== false,
+    hosts,
+    invalidHosts,
+    pollIntervalMs: Number(pick('poll_interval', POLL_INTERVALS)) * 1000,
+    volumeStep: Number(pick('volume_step', VOLUME_STEPS)),
+    language: LANGUAGES.includes(source.language) ? source.language : DEFAULT_CONFIG.language,
   };
 }

@@ -1,0 +1,48 @@
+[
+  {
+    "source_ip": "192.0.2.30",
+    "source_port": 1900,
+    "headers": "HTTP/1.1 200 OK\r\nCACHE-CONTROL: max-age=1800\r\nEXT:\r\nLOCATION: http://192.0.2.30:52323/dmr.xml\r\nSERVER: Linux/3.10 UPnP/1.0 SonyAudioDevice/1.0\r\nST: urn:schemas-sony-com:service:ScalarWebAPI:1\r\nUSN: uuid:00000000-0000-1010-8000-00005e005330::urn:schemas-sony-com:service:ScalarWebAPI:1\r\n\r\n"
+  },
+  {
+    "source_ip": "192.0.2.30",
+    "source_port": 1900,
+    "headers": "HTTP/1.1 200 OK\r\nCACHE-CONTROL: max-age=1800\r\nEXT:\r\nLOCATION: http://192.0.2.30:52323/dmr.xml\r\nSERVER: Linux/3.10 UPnP/1.0 SonyAudioDevice/1.0\r\nST: urn:schemas-sony-com:service:ScalarWebAPI:1\r\nUSN: uuid:00000000-0000-1010-8000-00005e005330::urn:schemas-sony-com:service:ScalarWebAPI:1\r\n\r\n",
+    "source_mac": "00:00:5e:00:53:30"
+  },
+  {
+    "source_ip": "192.0.2.31",
+    "source_port": 1900,
+    "headers": "HTTP/1.1 200 OK\r\nCACHE-CONTROL: max-age=1800\r\nEXT:\r\nLOCATION: http://192.0.2.31:52323/dmr.xml\r\nSERVER: Linux/3.10 UPnP/1.0 SonyAudioDevice/1.0\r\nST: urn:schemas-sony-com:service:ScalarWebAPI:1\r\nUSN: uuid:00000000-0000-1010-8000-00005e005340::urn:schemas-sony-com:service:ScalarWebAPI:1\r\n\r\n"
+  },
+  {
+    "source_ip": "192.0.2.32",
+    "source_port": 1900,
+    "headers": "HTTP/1.1 200 OK\r\nCACHE-CONTROL: max-age=1800\r\nEXT:\r\nLOCATION: http://192.0.2.32:54380/description.xml\r\nSERVER: Linux/3.10 UPnP/1.0 SonyAudioDevice/1.0\r\nST: urn:schemas-sony-com:service:ScalarWebAPI:1\r\nUSN: uuid:00000000-0000-1010-8000-00005e005350::urn:schemas-sony-com:service:ScalarWebAPI:1\r\n\r\n"
+  },
+  {
+    "source_ip": "192.0.2.33",
+    "source_port": 1900,
+    "headers": "HTTP/1.1 200 OK\r\nCACHE-CONTROL: max-age=1800\r\nEXT:\r\nLOCATION: http://192.0.2.33:61000/dd.xml\r\nSERVER: Linux/3.10 UPnP/1.0 SonyAudioDevice/1.0\r\nST: urn:schemas-sony-com:service:ScalarWebAPI:1\r\nUSN: uuid:00000000-0000-1010-8000-00005e005360::urn:schemas-sony-com:service:ScalarWebAPI:1\r\n\r\n"
+  },
+  {
+    "source_ip": "192.0.2.40",
+    "source_port": 1900,
+    "headers": "HTTP/1.1 200 OK\r\nCACHE-CONTROL: max-age=1800\r\nEXT:\r\nLOCATION: http://192.0.2.40:52323/dmr.xml\r\nSERVER: Linux/4.9 UPnP/1.0 BRAVIA/1.0\r\nST: urn:schemas-sony-com:service:ScalarWebAPI:1\r\nUSN: uuid:00000000-0000-1010-8000-00005e005370::urn:schemas-sony-com:service:ScalarWebAPI:1\r\n\r\n"
+  },
+  {
+    "source_ip": "192.0.2.50",
+    "source_port": 1900,
+    "headers": "HTTP/1.1 200 OK\r\nCACHE-CONTROL: max-age=1800\r\nEXT:\r\nLOCATION: http://198.51.100.7:52323/dmr.xml\r\nSERVER: Linux/3.10 UPnP/1.0 SonyAudioDevice/1.0\r\nST: urn:schemas-sony-com:service:ScalarWebAPI:1\r\nUSN: uuid:00000000-0000-1010-8000-00005e005380::urn:schemas-sony-com:service:ScalarWebAPI:1\r\n\r\n"
+  },
+  {
+    "source_ip": "192.0.2.1",
+    "source_port": 1900,
+    "headers": "HTTP/1.1 200 OK\r\nCACHE-CONTROL: max-age=1800\r\nLOCATION: http://192.0.2.1:80/RootDevice.xml\r\nST: upnp:rootdevice\r\nUSN: uuid:00000000-0000-0000-0000-000000000001::upnp:rootdevice\r\n\r\n"
+  },
+  {
+    "source_ip": "not-an-ip",
+    "source_port": 1900,
+    "headers": "HTTP/1.1 200 OK\r\n\r\n"
+  }
+]

@@ -1,41 +1,62 @@
 // -----------------------------------------------------------------------------
-// Scene actions (SDK v0.14+, Gladys 5.1+).
+// Scene action handlers (manifest `scene_actions`, Gladys 5.1+).
 //
-// A scene action is an OPERATION a scene author places in a scene, with
-// parameters and a result: "identify this device", "take a snapshot", "clean
-// these rooms". Each one is declared in the manifest `scene_actions` field
-// (key, label, `fields` in the config_schema grammar, scalar `outputs`) and
-// handled here, keyed by that same `key`; index.js registers every entry with
-// `gladys.onSceneAction(key, ...)`.
-//
-// Scene TRIGGERS are the other direction ("this happened"): they are fired by
-// the device that observes the event, see src/devices/motionSensor.js.
-//
-// The rules that matter:
-//   - `fields` arrive RESOLVED: scene variables substituted, defaults applied,
-//     validated by the core; a `"source": "devices"` field is the chosen
-//     device external_id;
-//   - resolve an object of the declared `outputs` (scalars only), readable by
-//     the following actions of the scene, or `undefined` for none. Keys not
-//     declared in the manifest are dropped by the core;
-//   - throwing fails THIS action only: the scene logs it and continues. A
-//     scene action is never a condition: return an output and let the scene
-//     author gate on it;
-//   - never fire a scene event as a consequence of a received action: a scene
-//     bound to that event would loop through the integration.
+// The features already cover "turn on", "set the volume", "choose a source in
+// the list". These actions take what a scene author types instead ("HDMI 1",
+// "TV", "Cinema", the names the device shows) and do several things in one
+// step, the device turned on first and awaited (longer than the 5 s a device
+// command may take): the "movie night" of a scene. They return what they did
+// for the next actions of the scene. Gladys applies the field defaults to
+// scene actions.
 // -----------------------------------------------------------------------------
 
-import { createLogger } from '@gladysassistant/integration-sdk';
-import { signalDevice } from './devices/index.js';
+import { SETTING_TARGETS, deviceName } from './devices.js';
+import { failure } from './texts.js';
 
-const logger = createLogger({ name: 'scenes' });
+// Values of the on/off selects of `set_sound`: "unchanged" leaves the setting.
+export const SWITCH_CHOICES = Object.freeze({ UNCHANGED: 'unchanged', ON: 'on', OFF: 'off' });
+
+const typed = (value) => (typeof value === 'string' ? value.trim() : '');
 
 export const SCENE_ACTIONS = {
-  // The ack is awaited under the action's `timeout_seconds` (15 s in the
-  // manifest), counted from the moment the scene reaches the action.
-  async identify_device(gladys, { fields, config }) {
-    logger.info(`Scene action identify_device <- ${fields.device}`);
-    const signalled = await signalDevice(gladys, fields.device, config);
-    return { signalled };
+  async select_source(hub, { fields = {} }) {
+    const record = hub.target(fields.device || null);
+    const source = await hub.selectSource(record, typed(fields.source));
+    return { source: source.name };
+  },
+
+  async set_sound(hub, { fields = {} }) {
+    const record = hub.target(fields.device || null);
+    await hub.ensureOn(record);
+    const outputs = { sound_mode: '', volume: record.snapshot.volume?.volume ?? 0 };
+    if (typed(fields.sound_mode)) {
+      const mode = await hub.setSoundMode(record, typed(fields.sound_mode));
+      outputs.sound_mode = mode.label;
+    } else {
+      const value = record.snapshot.settings?.[SETTING_TARGETS.SOUND_MODE]?.value;
+      outputs.sound_mode = record.caps.soundModes.find((mode) => mode.value === value)?.label ?? '';
+    }
+    const night = fields.night_mode ?? SWITCH_CHOICES.UNCHANGED;
+    if (night !== SWITCH_CHOICES.UNCHANGED) {
+      if (!record.caps.nightMode) {
+        throw failure(hub.language, 'noFeature', { name: deviceName(record) });
+      }
+      await hub.setSetting(
+        record,
+        SETTING_TARGETS.NIGHT_MODE,
+        night === SWITCH_CHOICES.ON ? 'on' : 'off',
+      );
+    }
+    const voice = fields.voice ?? SWITCH_CHOICES.UNCHANGED;
+    if (voice !== SWITCH_CHOICES.UNCHANGED) {
+      if (!record.caps.voice) {
+        throw failure(hub.language, 'noFeature', { name: deviceName(record) });
+      }
+      await hub.setVoiceSwitch(record, voice === SWITCH_CHOICES.ON);
+    }
+    if (fields.volume !== undefined && fields.volume !== null && fields.volume !== '') {
+      outputs.volume = await hub.setVolume(record, Number(fields.volume));
+    }
+    return outputs;
   },
 };

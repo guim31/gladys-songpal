@@ -30,6 +30,23 @@ Gladys before reporting a problem.
 
 In scope: the code of this repository and the Docker image it publishes.
 
+What the integration handles:
+
+- **Secrets**: none. The Sony Audio Control API has no authentication, and the
+  configuration holds no password, key nor token. An address typed with
+  credentials (`http://user:pass@…`) is refused, so they never reach the logs
+  nor the device params.
+- **`/data`**: `songpal-state.json` holds, for each device found or typed, what
+  it told about itself: its address on the local network, MAC addresses, serial
+  number, firmware version, model, its API description and the lists of its
+  sources and sound settings. Nothing else.
+- **Network**: plain HTTP and WebSocket to the devices on the local network
+  (port 10000 by default), and HTTP to the UPnP description of a device found by
+  the search, only on the very address that answered the search. The search
+  itself (SSDP) is sent by the Gladys core (`network_discovery`). No cloud
+  service, no other destination.
+
 Out of scope: Gladys Assistant itself (see its
 [security policy](https://github.com/GladysAssistant/Gladys/security/policy)),
-and the third-party services and devices the integration talks to.
+and the devices themselves: the Audio Control API is a plain HTTP protocol of
+Sony, open to anyone on the local network.
