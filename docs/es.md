@@ -27,7 +27,7 @@ Los televisores Sony Bravia usan la misma API, pero se dejan a la integración *
 
 ## Requisitos
 
-- Gladys 5.1.0 o posterior.
+- Gladys 5.3.0 o posterior.
 - El dispositivo conectado a su red (Wi-Fi o Ethernet), configurado una vez con la aplicación Sony
   Music Center.
 - **Espera de red activada** («Espera de red», «Inicio rápido» o «Encendido remoto», según el
@@ -62,21 +62,43 @@ Cada producto es un dispositivo, identificado por su dirección MAC (una nueva d
 por su router conserva el mismo dispositivo: lance de nuevo una búsqueda, se encuentra en su nueva
 dirección). Solo se crean las funciones que el dispositivo tiene:
 
-| Función                                                | Tipo de Gladys         | Qué hace                                                                                                                                                                    |
-| ------------------------------------------------------ | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Encendido / espera**                                 | interruptor            | Encendido / en espera.                                                                                                                                                      |
-| **Volumen**                                            | volumen de la música   | El volumen, en las unidades del dispositivo (a menudo de 0 a 50, de 0 a 74 en un receptor).                                                                                 |
-| **Silencio**                                           | interruptor            | Silencio activado / desactivado.                                                                                                                                            |
-| **Fuente**                                             | lista                  | Las entradas del dispositivo (HDMI, TV, óptica, analógica, Bluetooth…), con los nombres ajustados en él. «Otra (red, aplicación)» mientras suena Spotify, Chromecast o USB. |
-| **Modo de sonido**                                     | lista                  | Los modos de sonido del dispositivo (Standard, Cine, Música…), o los preajustes del ecualizador de un altavoz.                                                              |
-| **Modo nocturno**                                      | interruptor            | El modo nocturno de una barra de sonido.                                                                                                                                    |
-| **Mejora de voz**                                      | interruptor, o lista   | Activada/desactivada, o los niveles (Type 1, 2, 3) de las barras de sonido más antiguas.                                                                                    |
-| **Nivel del subwoofer**                                | regulador              | El nivel del subwoofer, dentro de los límites del dispositivo (en pasos de 0,5 dB en un receptor).                                                                          |
-| **Reproducir**, **Pausa**, **Anterior**, **Siguiente** | botones de música      | Solo en una fuente de red o USB: una entrada (HDMI, TV) reproduce lo que envía su dispositivo.                                                                              |
-| **Reproducción**                                       | estado de reproducción | Reproduciendo o en pausa, para la caja **Música** del panel.                                                                                                                |
+| Función                                                | Tipo de Gladys                                      | Qué hace                                                                                                                                                                    |
+| ------------------------------------------------------ | --------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Encendido / espera**                                 | interruptor                                         | Encendido / en espera.                                                                                                                                                      |
+| **Volumen**                                            | volumen de la música                                | El volumen, en porcentaje (100 % = el máximo del dispositivo). La acción de escena mantiene las unidades del dispositivo.                                                   |
+| **Silencio**                                           | silencio de la música (interruptor sin reproductor) | Silencio activado / desactivado.                                                                                                                                            |
+| **Fuente**                                             | lista                                               | Las entradas del dispositivo (HDMI, TV, óptica, analógica, Bluetooth…), con los nombres ajustados en él. «Otra (red, aplicación)» mientras suena Spotify, Chromecast o USB. |
+| **Modo de sonido**                                     | lista                                               | Los modos de sonido del dispositivo (Standard, Cine, Música…), o los preajustes del ecualizador de un altavoz.                                                              |
+| **Modo nocturno**                                      | interruptor                                         | El modo nocturno de una barra de sonido.                                                                                                                                    |
+| **Mejora de voz**                                      | interruptor, o lista                                | Activada/desactivada, o los niveles (Type 1, 2, 3) de las barras de sonido más antiguas.                                                                                    |
+| **Nivel del subwoofer**                                | regulador                                           | El nivel del subwoofer, dentro de los límites del dispositivo (en pasos de 0,5 dB en un receptor).                                                                          |
+| **Reproducir**, **Pausa**, **Anterior**, **Siguiente** | botones de música                                   | Solo en una fuente de red o USB: una entrada (HDMI, TV) reproduce lo que envía su dispositivo.                                                                              |
+| **Reproducción**                                       | estado de reproducción                              | Reproduciendo, en pausa o detenido (nada cargado: entrada HDMI/TV, espera). Escribible: pausa, reproducción, parada.                                                        |
+| **Título**, **Artista**, **Álbum**                     | textos de la música                                 | Lo que suena en una fuente de red, USB o Bluetooth; vacíos en una entrada (HDMI, TV, óptica).                                                                               |
+| **Carátula**                                           | carátula de la música                               | Cuando el dispositivo la da (Cast, Spotify, radio), rara vez.                                                                                                               |
+| **Duración**, **Posición**                             | segundos                                            | Duración de la pista (0 para un flujo); la posición solo se ajusta en una pista de memoria USB.                                                                             |
 
 Elegir una fuente mientras el dispositivo está en espera lo enciende primero. Un receptor se
 controla en su zona principal.
+
+## Reproductor Música de Gladys 5.3
+
+Desde la versión 1.1.0 (Gladys 5.3 como mínimo), una barra de sonido, un receptor o un altavoz que
+puede pausar se convierte en un verdadero reproductor en el widget **Música** del panel: título,
+artista, álbum, carátula cuando el dispositivo la da, barra de progreso, reproducción / pausa /
+parada, anterior / siguiente, volumen y silencio. Use primero ese widget; el widget _Mando Sony
+Audio_ sigue para la fuente y el modo de sonido.
+
+- **Dispositivos ya añadidos**: vuelva a buscar en la pestaña Descubrimiento y haga clic en
+  **Actualizar** en el dispositivo. Las nuevas funciones se añaden, las antiguas conservan sus
+  identificadores (escenas y paneles siguen funcionando) y **Silencio** pasa a ser el silencio de la
+  música.
+- En una entrada (HDMI, TV, óptica) no hay nada «cargado»: el estado es **detenido** y los textos
+  están vacíos. Una escena que esperaba «Reproducción = 0» en una entrada debe buscar ahora 2.
+- Sin biblioteca, cola ni búsqueda: la API de Sony no las ofrece de forma fiable. Tampoco aleatorio
+  ni repetición.
+- Moverse dentro de la pista solo funciona en una memoria USB; en otro caso Gladys muestra un
+  rechazo claro.
 
 ## Widgets
 

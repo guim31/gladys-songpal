@@ -8,8 +8,10 @@ contributors.
 A Gladys Assistant **external integration**: a Node.js service (Node 22+, ESM,
 no build step) that runs in its own sandboxed Docker container and talks to
 Gladys through
-[`@gladysassistant/integration-sdk`](https://github.com/GladysAssistant/integration-sdk-js),
-its only runtime dependency. It started from the official JavaScript template.
+[`@gladysassistant/integration-sdk`](https://github.com/GladysAssistant/integration-sdk-js).
+The SDK and `jpeg-js` (artwork reduction) are its only runtime dependencies
+(`test/manifest.test.js` checks every package the code imports is one: the image installs with
+`npm ci --omit=dev`). It started from the official JavaScript template.
 
 ## Commands
 
@@ -285,6 +287,21 @@ lue dans python-songpal, GPL : lecture seule, et dans l'intégration HA `songpal
   ils relèvent de gladys-sony-bravia.
 - `pausePlayingContent` **bascule** lecture/pause (hypothèse non vérifiée sur matériel) : ne
   l'envoyer que si l'état diffère, et jamais sur une entrée (`contentKind: "input"`).
+
+- **Lecteur Musique 5.3 (1.1.0)** : `src/music.js` (publishNowPlaying, pochette). Une entrée
+  (`contentKind`/`kind` `input`, URI `extInput:`) = rien de chargé → IDLE, textes vides. Une
+  notification `kind: "directory"` (dossier USB parcouru) n'a pas d'état : l'ignorer (sinon le titre
+  clignote) ; une notification d'entrée n'en a pas non plus mais compte. Pas de méthode de seek :
+  `setPlayContent` 1.2 `{ uri, positionMsec }` sur un morceau `storage:` seulement (non vérifié sur
+  matériel). `shuffleType` / `repeatType` existent dans `getPlaybackModeSettings`, valeurs inconnues :
+  non publiés. La position donnée par l'appareil est un échantillon daté (`sampledAt`) et avancée
+  jusqu'à maintenant tant qu'il joue (sinon un changement de volume republie une position vieille de
+  5 min). Le volume est publié **en pourcentage** de la plage de l'appareil (la boîte Musique 5.3 a un
+  curseur à 100) ; l'action de scène garde les unités de l'appareil. Lecture après un arrêt :
+  `setPlayContent(uri)`, pas la bascule. Non faits (relecture du 26/10) : un seek en pause relance
+  sans doute la lecture (état mis à PLAYING en optimiste, non vérifié) ; `position` reste inscriptible
+  même sans `setPlayContent` 1.2, et `playback_state` annonce 2 même sans `stopPlayingContent`
+  (`supported_options` possible).
 
 **Pièges du cœur rencontrés ici**
 

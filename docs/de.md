@@ -30,7 +30,7 @@ Sony-Bravia-Fernseher nutzen dieselbe API, bleiben aber der Integration **Sony B
 
 ## Voraussetzungen
 
-- Gladys 5.1.0 oder neuer.
+- Gladys 5.3.0 oder neuer.
 - Das Gerät mit deinem Netzwerk verbunden (WLAN oder Ethernet), einmal mit der App Sony Music
   Center eingerichtet.
 - **Netzwerk-Standby an** („Netzwerk-Standby“, „Schnellstart“ oder „Fernstart“, je nach Modell):
@@ -66,21 +66,42 @@ Jedes Produkt ist ein Gerät, erkannt an seiner MAC-Adresse (eine neue IP-Adress
 behält dasselbe Gerät: Starte die Suche erneut, es wird unter seiner neuen Adresse gefunden). Nur
 die Funktionen, die das Gerät hat, werden angelegt:
 
-| Funktion                                          | Gladys-Typ             | Was sie tut                                                                                                                                                              |
-| ------------------------------------------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Ein / Standby**                                 | Schalter               | Ein / Standby.                                                                                                                                                           |
-| **Lautstärke**                                    | Musiklautstärke        | Die Lautstärke, in den Einheiten des Geräts (oft 0 bis 50, 0 bis 74 bei einem Receiver).                                                                                 |
-| **Stumm**                                         | Schalter               | Stummschaltung an / aus.                                                                                                                                                 |
-| **Quelle**                                        | Liste                  | Die Eingänge des Geräts (HDMI, TV, optisch, analog, Bluetooth…), mit den dort eingestellten Namen. „Andere (Netzwerk, App)“, solange Spotify, Chromecast oder USB läuft. |
-| **Klangmodus**                                    | Liste                  | Die Klangfelder des Geräts (Standard, Film, Musik…) oder die Equalizer-Voreinstellungen eines Lautsprechers.                                                             |
-| **Nachtmodus**                                    | Schalter               | Der Nachtmodus einer Soundbar.                                                                                                                                           |
-| **Sprachverbesserung**                            | Schalter oder Liste    | An/aus, oder die Stufen (Type 1, 2, 3) älterer Soundbars.                                                                                                                |
-| **Subwoofer-Pegel**                               | Dimmer                 | Der Pegel des Subwoofers, in den Grenzen des Geräts (in Schritten von 0,5 dB bei einem Receiver).                                                                        |
-| **Wiedergabe**, **Pause**, **Zurück**, **Weiter** | Musiktasten            | Nur bei einer Netzwerk- oder USB-Quelle: Ein Eingang (HDMI, TV) spielt, was sein Gerät sendet.                                                                           |
-| **Wiedergabestatus**                              | Musik-Wiedergabestatus | Wiedergabe oder Pause, für die **Musik**-Box des Dashboards.                                                                                                             |
+| Funktion                                          | Gladys-Typ                                  | Was sie tut                                                                                                                                                              |
+| ------------------------------------------------- | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Ein / Standby**                                 | Schalter                                    | Ein / Standby.                                                                                                                                                           |
+| **Lautstärke**                                    | Musiklautstärke                             | Die Lautstärke, in Prozent (100 % = Maximum des Geräts). Die Szenenaktion behält die Einheiten des Geräts.                                                               |
+| **Stumm**                                         | Musik-Stummschaltung (Schalter ohne Player) | Stummschaltung an / aus.                                                                                                                                                 |
+| **Quelle**                                        | Liste                                       | Die Eingänge des Geräts (HDMI, TV, optisch, analog, Bluetooth…), mit den dort eingestellten Namen. „Andere (Netzwerk, App)“, solange Spotify, Chromecast oder USB läuft. |
+| **Klangmodus**                                    | Liste                                       | Die Klangfelder des Geräts (Standard, Film, Musik…) oder die Equalizer-Voreinstellungen eines Lautsprechers.                                                             |
+| **Nachtmodus**                                    | Schalter                                    | Der Nachtmodus einer Soundbar.                                                                                                                                           |
+| **Sprachverbesserung**                            | Schalter oder Liste                         | An/aus, oder die Stufen (Type 1, 2, 3) älterer Soundbars.                                                                                                                |
+| **Subwoofer-Pegel**                               | Dimmer                                      | Der Pegel des Subwoofers, in den Grenzen des Geräts (in Schritten von 0,5 dB bei einem Receiver).                                                                        |
+| **Wiedergabe**, **Pause**, **Zurück**, **Weiter** | Musiktasten                                 | Nur bei einer Netzwerk- oder USB-Quelle: Ein Eingang (HDMI, TV) spielt, was sein Gerät sendet.                                                                           |
+| **Wiedergabestatus**                              | Musik-Wiedergabestatus                      | Wiedergabe, Pause oder gestoppt (nichts geladen: HDMI-/TV-Eingang, Standby). Schreibbar: Pause, Wiedergabe, Stopp.                                                       |
+| **Titel**, **Interpret**, **Album**               | Musiktexte                                  | Was auf einer Netzwerk-, USB- oder Bluetooth-Quelle läuft; leer auf einem Eingang (HDMI, TV, optisch).                                                                   |
+| **Cover**                                         | Musik-Cover                                 | Wenn das Gerät eins liefert (Cast, Spotify, Radio), selten.                                                                                                              |
+| **Dauer**, **Position**                           | Sekunden                                    | Länge des Titels (0 bei einem Stream); die Position lässt sich nur bei einem Titel vom USB-Stick setzen.                                                                 |
 
 Eine Quelle zu wählen, während das Gerät im Standby ist, schaltet es zuerst ein. Ein Receiver wird
 in seiner Hauptzone gesteuert.
+
+## Musik-Player von Gladys 5.3
+
+Seit Version 1.1.0 (mindestens Gladys 5.3) wird eine Soundbar, ein Receiver oder ein Lautsprecher,
+der pausieren kann, zu einem echten Player im **Musik**-Widget des Dashboards: Titel, Interpret,
+Album, Cover, wenn das Gerät eins liefert, Fortschrittsbalken, Wiedergabe / Pause / Stopp, zurück /
+weiter, Lautstärke und Stumm. Nimm zuerst dieses Widget; das Widget _Sony-Audio-Fernbedienung_
+bleibt für Quelle und Klangmodus.
+
+- **Bereits hinzugefügte Geräte**: Suche im Tab Erkennung erneut und klicke beim Gerät auf
+  **Aktualisieren**. Die neuen Funktionen kommen dazu, die alten behalten ihre IDs (Szenen und
+  Dashboards funktionieren weiter), und **Stumm** wird zur Musik-Stummschaltung.
+- Auf einem Eingang (HDMI, TV, optisch) ist nichts „geladen“: Der Status ist **gestoppt**, die Texte
+  sind leer. Eine Szene, die auf „Wiedergabestatus = 0“ bei einem Eingang wartete, muss jetzt 2
+  prüfen.
+- Keine Bibliothek, Warteschlange oder Suche: Die Sony-API bietet sie nicht zuverlässig. Auch kein
+  Zufall und keine Wiederholung.
+- Springen im Titel geht nur auf einem USB-Stick; sonst zeigt Gladys eine klare Ablehnung.
 
 ## Widgets
 

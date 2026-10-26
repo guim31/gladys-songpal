@@ -27,7 +27,7 @@ Sony Bravia TVs use the same API but are left to the **Sony Bravia TV** integrat
 
 ## Requirements
 
-- Gladys 5.1.0 or later.
+- Gladys 5.3.0 or later.
 - The device connected to your network (Wi-Fi or Ethernet), set up once with the Sony Music
   Center app.
 - **Network standby on** ("Network standby", "Quick start" or "Remote start", depending on the
@@ -62,21 +62,40 @@ Each product is one device, identified by its MAC address (a new IP address give
 keeps the same device: search again, it is found at its new address). Only the features the
 device has are created:
 
-| Feature                                     | Gladys type          | What it does                                                                                                                                               |
-| ------------------------------------------- | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Power**                                   | switch (on/off)      | On / standby.                                                                                                                                              |
-| **Volume**                                  | music volume         | The volume, in the units of the device (often 0 to 50, 0 to 74 on a receiver).                                                                             |
-| **Mute**                                    | switch (on/off)      | Mute on / off.                                                                                                                                             |
-| **Source**                                  | list                 | The inputs of the device (HDMI, TV, optical, analog, Bluetooth…), with the names set on it. "Other (network, app)" while Spotify, Chromecast or USB plays. |
-| **Sound mode**                              | list                 | The sound fields of the device (Standard, Movie, Music…), or the equalizer presets of a speaker.                                                           |
-| **Night mode**                              | switch (on/off)      | Night mode of a sound bar.                                                                                                                                 |
-| **Voice enhancement**                       | switch, or list      | On/off, or the levels (Type 1, 2, 3) of the older sound bars.                                                                                              |
-| **Subwoofer level**                         | dimmer               | The level of the subwoofer, within the bounds of the device (in 0.5 dB steps on a receiver).                                                               |
-| **Play**, **Pause**, **Previous**, **Next** | music buttons        | On a network or USB source only: an input (HDMI, TV) plays whatever its device sends.                                                                      |
-| **Playback**                                | music playback state | Playing or paused, for the **Music** box of the dashboard.                                                                                                 |
+| Feature                                     | Gladys type                          | What it does                                                                                                                                               |
+| ------------------------------------------- | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Power**                                   | switch (on/off)                      | On / standby.                                                                                                                                              |
+| **Volume**                                  | music volume                         | The volume, in percent (100 % = the device's maximum). The scene action keeps the device's units.                                                          |
+| **Mute**                                    | music mute (switch without a player) | Mute on / off.                                                                                                                                             |
+| **Source**                                  | list                                 | The inputs of the device (HDMI, TV, optical, analog, Bluetooth…), with the names set on it. "Other (network, app)" while Spotify, Chromecast or USB plays. |
+| **Sound mode**                              | list                                 | The sound fields of the device (Standard, Movie, Music…), or the equalizer presets of a speaker.                                                           |
+| **Night mode**                              | switch (on/off)                      | Night mode of a sound bar.                                                                                                                                 |
+| **Voice enhancement**                       | switch, or list                      | On/off, or the levels (Type 1, 2, 3) of the older sound bars.                                                                                              |
+| **Subwoofer level**                         | dimmer                               | The level of the subwoofer, within the bounds of the device (in 0.5 dB steps on a receiver).                                                               |
+| **Play**, **Pause**, **Previous**, **Next** | music buttons                        | On a network or USB source only: an input (HDMI, TV) plays whatever its device sends.                                                                      |
+| **Playback**                                | music playback state                 | Playing, paused or stopped (nothing loaded: HDMI/TV input, standby). Writable: pause, play, stop.                                                          |
+| **Title**, **Artist**, **Album**            | music texts                          | What plays on a network, USB or Bluetooth source; empty on an input (HDMI, TV, optical).                                                                   |
+| **Artwork**                                 | music artwork                        | When the device gives one (Cast, Spotify, radio), rarely.                                                                                                  |
+| **Duration**, **Position**                  | seconds                              | Length of the track (0 for a stream); the position can be set on a USB track only.                                                                         |
 
 Choosing a source while the device is in standby turns it on first. A receiver is controlled on
 its main zone.
+
+## Gladys 5.3 Music player
+
+Since version 1.1.0 (Gladys 5.3 at least), a sound bar, receiver or speaker that can pause becomes
+a real player in the dashboard **Music** widget: title, artist, album, artwork when the device
+gives one, progress bar, play / pause / stop, previous / next, volume and mute. Use that widget
+first; the _Sony Audio remote_ widget stays for the source and the sound mode.
+
+- **Devices already added**: search again in the Discovery tab, then click **Update** on the
+  device. The new features are added, the old ones keep their ids (scenes and dashboards keep
+  working), and **Mute** becomes the music mute.
+- On an input (HDMI, TV, optical) nothing is "loaded": the state is **stopped** and the texts are
+  empty. A scene that waited for "Playback = 0" on an input must now look for 2.
+- No library, queue or search: the Sony API does not expose them reliably. No shuffle or repeat
+  either.
+- Moving within the track works on a USB stick only; anywhere else Gladys shows a clear refusal.
 
 ## Widgets
 

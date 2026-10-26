@@ -7,6 +7,7 @@
 import { createLogger } from '@gladysassistant/integration-sdk';
 import { normalizeConfig } from './config.js';
 import { SongpalHub } from './hub.js';
+import { createArtworkHandler } from './music.js';
 import { SCENE_ACTIONS } from './scenes.js';
 import { Store } from './store.js';
 import { INIT_FAILED } from './texts.js';
@@ -67,6 +68,9 @@ export function registerHandlers(gladys, options = {}) {
   gladys.onScanRequest(whenReady(() => hub.rediscover()));
 
   gladys.onSetValue(whenReady((device, feature, value) => hub.setValue(device, feature, value)));
+  // Gladys 5.3 music player: the artwork of what plays, made small enough
+  // for the core when it is not (no catalog: `"music": {}`).
+  gladys.onMusicGetArtwork(createArtworkHandler(gladys, { fetchImpl: options.fetchImpl }));
 
   // The devices are published with should_poll: false (the hub reads them on
   // its own timer and gets their notifications); this only serves a Gladys
@@ -81,6 +85,9 @@ export function registerHandlers(gladys, options = {}) {
   );
 
   gladys.onDeviceCreated(whenReady((device) => hub.onDeviceCreated(device)));
+  // "Update" in Discover: the SDK forgot what it published, the new features
+  // (the 5.3 player) get their states now, not at the next read.
+  gladys.onDeviceUpdated(whenReady((device) => hub.onDeviceCreated(device)));
   gladys.onDeviceDeleted(whenReady((device) => hub.onDeviceDeleted(device)));
 
   gladys.onConfigUpdated(

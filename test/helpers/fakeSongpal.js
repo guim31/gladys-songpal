@@ -106,6 +106,12 @@ export class FakeSongpal {
     this.notify('notifyPlayingContentInfo', this.playing[0]);
   }
 
+  /** What plays becomes `entry` (a real notification), notified as it is. */
+  setPlaying(entry, notification = entry) {
+    this.playing = [clone(entry)];
+    this.notify('notifyPlayingContentInfo', clone(notification));
+  }
+
   /** The remote changes the volume, notified. */
   changeVolume(volume, mute) {
     const main = this.mainVolume;
@@ -342,6 +348,16 @@ export class FakeSongpal {
       case 'avContent.getPlayingContentInfo':
         return [clone(this.playing)];
       case 'avContent.setPlayContent': {
+        const main = this.playing[0];
+        if (main?.uri === params.uri && !params.uri.startsWith('extInput:')) {
+          // A USB track played again, from a position (the seek) or from 0.
+          this.setPlaying({
+            ...main,
+            positionMsec: params.positionMsec ?? 0,
+            stateInfo: { state: 'PLAYING' },
+          });
+          return [];
+        }
         if (!this.terminals.some((terminal) => terminal.uri === params.uri)) {
           return { error: [3, 'Illegal Argument'] };
         }
@@ -350,11 +366,21 @@ export class FakeSongpal {
       }
       case 'avContent.pausePlayingContent': {
         const main = this.playing[0];
-        if (!main || main.contentKind === 'input') {
+        // A stopped content is unloaded: nothing to resume (the hypothesis
+        // the hub follows, unverified on hardware).
+        if (!main || main.contentKind === 'input' || main.stateInfo?.state === 'STOPPED') {
           return { error: ILLEGAL_STATE };
         }
         const state = main.stateInfo?.state === 'PLAYING' ? 'PAUSED' : 'PLAYING';
         this.play(main.uri, state);
+        return [];
+      }
+      case 'avContent.stopPlayingContent': {
+        const main = this.playing[0];
+        if (!main || main.contentKind === 'input') {
+          return { error: ILLEGAL_STATE };
+        }
+        this.setPlaying({ ...main, stateInfo: { state: 'STOPPED' } });
         return [];
       }
       case 'avContent.setPlayNextContent':

@@ -29,7 +29,7 @@ TV**.
 
 ## Prérequis
 
-- Gladys 5.1.0 ou plus récent.
+- Gladys 5.3.0 ou plus récent.
 - L'appareil connecté à votre réseau (Wi-Fi ou Ethernet), configuré une fois avec l'application
   Sony Music Center.
 - **Veille réseau activée** (« Veille réseau », « Démarrage rapide » ou « Démarrage à distance »
@@ -64,21 +64,43 @@ Chaque produit est un appareil, identifié par son adresse MAC (une nouvelle adr
 votre box garde le même appareil : relancez une recherche, il est retrouvé à sa nouvelle adresse).
 Seules les fonctionnalités que l'appareil possède sont créées :
 
-| Fonctionnalité                                     | Type Gladys             | Ce qu'elle fait                                                                                                                                                     |
-| -------------------------------------------------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Marche / veille**                                | interrupteur            | Allumé / en veille.                                                                                                                                                 |
-| **Volume**                                         | volume de la musique    | Le volume, dans les unités de l'appareil (souvent 0 à 50, 0 à 74 sur un ampli).                                                                                     |
-| **Muet**                                           | interrupteur            | Sourdine activée / désactivée.                                                                                                                                      |
-| **Source**                                         | liste                   | Les entrées de l'appareil (HDMI, TV, optique, analogique, Bluetooth…), avec les noms réglés dessus. « Autre (réseau, appli) » pendant Spotify, Chromecast ou l'USB. |
-| **Mode son**                                       | liste                   | Les modes son de l'appareil (Standard, Cinéma, Musique…), ou les préréglages d'égaliseur d'une enceinte.                                                            |
-| **Mode nuit**                                      | interrupteur            | Le mode nuit d'une barre de son.                                                                                                                                    |
-| **Amélioration des voix**                          | interrupteur, ou liste  | Activée/désactivée, ou les niveaux (Type 1, 2, 3) des barres de son plus anciennes.                                                                                 |
-| **Niveau du caisson**                              | variateur               | Le niveau du caisson de basses, dans les bornes de l'appareil (par pas de 0,5 dB sur un ampli).                                                                     |
-| **Lecture**, **Pause**, **Précédent**, **Suivant** | boutons de musique      | Sur une source réseau ou USB seulement : une entrée (HDMI, TV) joue ce que son appareil envoie.                                                                     |
-| **Lecture en cours**                               | état de lecture musique | En lecture ou en pause, pour la boîte **Musique** du tableau de bord.                                                                                               |
+| Fonctionnalité                                     | Type Gladys                                    | Ce qu'elle fait                                                                                                                                                     |
+| -------------------------------------------------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Marche / veille**                                | interrupteur                                   | Allumé / en veille.                                                                                                                                                 |
+| **Volume**                                         | volume de la musique                           | Le volume, en pourcentage (100 % = le maximum de l'appareil). L'action de scène garde les unités de l'appareil.                                                     |
+| **Muet**                                           | muet de la musique (interrupteur sans lecteur) | Sourdine activée / désactivée.                                                                                                                                      |
+| **Source**                                         | liste                                          | Les entrées de l'appareil (HDMI, TV, optique, analogique, Bluetooth…), avec les noms réglés dessus. « Autre (réseau, appli) » pendant Spotify, Chromecast ou l'USB. |
+| **Mode son**                                       | liste                                          | Les modes son de l'appareil (Standard, Cinéma, Musique…), ou les préréglages d'égaliseur d'une enceinte.                                                            |
+| **Mode nuit**                                      | interrupteur                                   | Le mode nuit d'une barre de son.                                                                                                                                    |
+| **Amélioration des voix**                          | interrupteur, ou liste                         | Activée/désactivée, ou les niveaux (Type 1, 2, 3) des barres de son plus anciennes.                                                                                 |
+| **Niveau du caisson**                              | variateur                                      | Le niveau du caisson de basses, dans les bornes de l'appareil (par pas de 0,5 dB sur un ampli).                                                                     |
+| **Lecture**, **Pause**, **Précédent**, **Suivant** | boutons de musique                             | Sur une source réseau ou USB seulement : une entrée (HDMI, TV) joue ce que son appareil envoie.                                                                     |
+| **Lecture en cours**                               | état de lecture musique                        | En lecture, en pause ou à l'arrêt (rien de chargé : entrée HDMI/TV, veille). Inscriptible : pause, lecture, arrêt.                                                  |
+| **Titre**, **Artiste**, **Album**                  | textes de la musique                           | Ce qui joue sur une source réseau, USB ou Bluetooth ; vides sur une entrée (HDMI, TV, optique).                                                                     |
+| **Pochette**                                       | pochette de la musique                         | Quand l'appareil la donne (Cast, Spotify, radio), rarement.                                                                                                         |
+| **Durée**, **Position**                            | secondes                                       | Durée du morceau (0 pour un flux) ; la position se règle seulement sur un morceau de clé USB.                                                                       |
 
 Choisir une source pendant que l'appareil est en veille l'allume d'abord. Un ampli est piloté sur
 sa zone principale.
+
+## Lecteur Musique de Gladys 5.3
+
+Depuis la version 1.1.0 (Gladys 5.3 au minimum), une barre de son, un ampli ou une enceinte qui sait
+mettre en pause devient un vrai lecteur dans le widget **Musique** du tableau de bord : titre,
+artiste, album, pochette quand l'appareil en donne une, barre de progression, lecture / pause /
+arrêt, précédent / suivant, volume et muet. C'est le widget à utiliser en premier ; le widget
+_Télécommande Sony Audio_ reste pour la source et le mode son.
+
+- **Appareils déjà ajoutés** : relancez une recherche dans l'onglet Découverte, puis cliquez sur
+  **Mettre à jour** sur l'appareil. Les nouvelles fonctionnalités s'ajoutent, les anciennes gardent
+  leurs identifiants (scènes et tableaux de bord continuent de fonctionner), et **Muet** devient le
+  muet de la musique.
+- Sur une entrée (HDMI, TV, optique), rien n'est « chargé » : l'état vaut **arrêt** et les textes
+  sont vides. Une scène qui attendait « Lecture en cours = 0 » sur une entrée doit viser 2.
+- Pas de bibliothèque, de file d'attente ni de recherche : l'API Sony ne les expose pas de façon
+  fiable. Pas d'aléatoire ni de répétition non plus.
+- Se déplacer dans le morceau n'est possible que sur une clé USB ; ailleurs, Gladys affiche un refus
+  clair.
 
 ## Widgets
 

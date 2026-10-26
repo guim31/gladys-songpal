@@ -55,6 +55,9 @@ const scenarios = [
 ];
 
 /** The checks of one discovered device. */
+// The string music types of Gladys 5.3 (capabilities/music.md, section 1).
+const MUSIC_STRING_TYPES = new Set(['title', 'artist', 'album', 'artwork']);
+
 function checkDevice(device, fake) {
   const where = device.name;
 
@@ -136,7 +139,14 @@ function checkDevice(device, fake) {
       assert.ok(fake.lastState(`${device.external_id}:power`) === 0, `${at}: no state published`);
       continue;
     }
-    if (feature.category === 'text') {
+    if (feature.category === 'music' && MUSIC_STRING_TYPES.has(feature.type)) {
+      // Gladys 5.3: string states, empty when nothing is loaded; an artwork
+      // is a key, never a URL.
+      assert.equal(typeof value, 'string', `${at}: ${value} is not a text`);
+      if (feature.type === 'artwork' && value !== '') {
+        assert.match(value, /^[a-z0-9][a-z0-9-]{0,63}$/, `${at}: ${value} is not an image key`);
+      }
+    } else if (feature.category === 'text') {
       assert.equal(typeof value, 'string', `${at}: ${value} is not a text`);
       assert.ok(value.trim().length > 0, `${at}: empty text`);
       if (isSelect) {

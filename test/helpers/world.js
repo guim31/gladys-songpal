@@ -65,6 +65,7 @@ export async function createWorld({
   websocket = true,
   discover = true,
   scanResults = SSDP_RESULTS,
+  fetchImpl,
 } = {}) {
   const network = createNetwork(devices ?? [new FakeSongpal('ht-zf9')]);
   const gladys = createFakeGladys({
@@ -80,6 +81,7 @@ export async function createWorld({
     timings,
     now: clock.now,
     sleep: clock.sleep,
+    fetchImpl,
   });
   const world = {
     gladys,

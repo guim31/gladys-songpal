@@ -93,6 +93,7 @@ const VERSIONS = {
   'avContent.getPlayingContentInfo': ['1.2', '1.0'],
   'avContent.setPlayContent': ['1.2', '1.0'],
   'avContent.pausePlayingContent': ['1.1', '1.0'],
+  'avContent.stopPlayingContent': ['1.1', '1.0'],
   'avContent.setPlayNextContent': ['1.0'],
   'avContent.setPlayPreviousContent': ['1.0'],
 };
@@ -383,6 +384,32 @@ export class SongpalClient {
   async pausePlayingContent() {
     await this.invoke('avContent', 'pausePlayingContent', (v) =>
       v === '1.0' ? [] : [{ output: '' }],
+    );
+  }
+
+  /** Stop what plays (the device unloads it). */
+  async stopPlayingContent() {
+    await this.invoke('avContent', 'stopPlayingContent', (v) =>
+      v === '1.0' ? [] : [{ output: '' }],
+    );
+  }
+
+  /**
+   * Play the content of `uri` from `positionMs`: the seek of a USB track. Only
+   * `setPlayContent` 1.2 takes a position (the device has no seek method).
+   */
+  async playContentAt(uri, positionMs) {
+    if (this.versionOf('avContent', 'setPlayContent') !== '1.2') {
+      throw new SongpalError(
+        ERROR_KINDS.UNSUPPORTED,
+        'avContent.setPlayContent 1.2: not on this device',
+      );
+    }
+    await this.call(
+      'avContent',
+      'setPlayContent',
+      [{ output: '', uri, positionMsec: Math.max(0, Math.round(positionMs)) }],
+      '1.2',
     );
   }
 

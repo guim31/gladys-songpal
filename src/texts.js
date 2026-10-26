@@ -96,6 +96,8 @@ export const ACTION_TEXT = {
     noFeature: '{name} has no such setting.',
     notOn: '{name} did not turn on.',
     noPlayback: '{name}: the current source cannot be paused or skipped.',
+    noSeek: '{name}: only a USB track can be moved within.',
+    badPlaybackState: 'Choose pause (0), play (1) or stop (2).',
   },
   fr: {
     noDevice:
@@ -109,6 +111,8 @@ export const ACTION_TEXT = {
     noFeature: "{name} n'a pas ce réglage.",
     notOn: "{name} ne s'est pas allumé.",
     noPlayback: '{name} : la source actuelle ne se met pas en pause et ne se saute pas.',
+    noSeek: '{name} : seul un morceau sur clé USB permet de se déplacer.',
+    badPlaybackState: 'Choisissez pause (0), lecture (1) ou arrêt (2).',
   },
   de: {
     noDevice: 'Noch kein Sony-Audiogerät: Suche im Tab Erkennung.',
@@ -121,6 +125,8 @@ export const ACTION_TEXT = {
     noFeature: '{name} hat diese Einstellung nicht.',
     notOn: '{name} hat sich nicht eingeschaltet.',
     noPlayback: '{name}: Die aktuelle Quelle lässt sich nicht pausieren oder überspringen.',
+    noSeek: '{name}: Nur in einem Titel vom USB-Stick kannst du springen.',
+    badPlaybackState: 'Wähle Pause (0), Wiedergabe (1) oder Stopp (2).',
   },
   es: {
     noDevice:
@@ -134,6 +140,8 @@ export const ACTION_TEXT = {
     noFeature: '{name} no tiene este ajuste.',
     notOn: '{name} no se ha encendido.',
     noPlayback: '{name}: la fuente actual no se puede pausar ni saltar.',
+    noSeek: '{name}: solo una pista en una memoria USB permite desplazarse.',
+    badPlaybackState: 'Elija pausa (0), reproducción (1) o parada (2).',
   },
 };
 

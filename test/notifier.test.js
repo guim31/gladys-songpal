@@ -181,7 +181,7 @@ test('end to end over real HTTP and WebSocket', async (t) => {
   assert.equal(discovered.params[0].value, `http://127.0.0.1:${port}/sony`);
   await gladys.fake.deviceCreated(discovered);
   const state = (key) => gladys.fake.lastState(`${discovered.external_id}:${key}`);
-  assert.equal(state('volume'), 15);
+  assert.equal(state('volume'), 30);
 
   const record = [...app.hub.records.values()][0];
   for (let turn = 0; turn < 100 && !record.notifying; turn += 1) {
@@ -191,10 +191,10 @@ test('end to end over real HTTP and WebSocket', async (t) => {
 
   // The remote changes the volume: the notification brings it.
   device.changeVolume(26);
-  for (let turn = 0; turn < 100 && state('volume') !== 26; turn += 1) {
+  for (let turn = 0; turn < 100 && state('volume') !== 52; turn += 1) {
     await new Promise((resolve) => setTimeout(resolve, 10));
   }
-  assert.equal(state('volume'), 26);
+  assert.equal(state('volume'), 52);
 
   // Gladys changes the source: over HTTP.
   const feature = discovered.features.find((f) => f.external_id.endsWith(':source'));
