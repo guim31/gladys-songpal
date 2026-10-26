@@ -10,6 +10,8 @@ the notes of the version's GitHub Release.
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-10-26
+
 ### Added
 
 - Gladys 5.3 Music player (needs Gladys 5.3.0 or later): title, artist, album, artwork (when the
@@ -64,5 +66,6 @@ the notes of the version's GitHub Release.
 - "Test the connection" in the Configuration screen.
 - English, French, German and Spanish texts and documentation.
 
-[Unreleased]: https://github.com/guim31/gladys-songpal/compare/v1.0.1...HEAD
+[Unreleased]: https://github.com/guim31/gladys-songpal/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/guim31/gladys-songpal/compare/v1.0.1...v1.1.0
 [1.0.1]: https://github.com/guim31/gladys-songpal/releases/tag/v1.0.1

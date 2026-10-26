@@ -1,6 +1,6 @@
 {
   "name": "gladys-songpal",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "private": true,
   "description": "Sony Audio (Songpal) integration for Gladys Assistant: Sony sound bars, receivers and speakers, on the local network.",
   "type": "module",
