@@ -145,8 +145,14 @@ export function parseSources(terminals = []) {
 }
 
 /**
- * What plays on the main output.
- * @returns {{ uri: string|null, kind: string|null, state: string|null, title: string|null }|null}
+ * What plays on the main output. Titles, times and artwork only exist for a
+ * network, USB or Bluetooth source (an input such as HDMI or TV has none);
+ * the times are in ms (`durationMsec`, `positionMsec`), some firmwares give
+ * seconds (`durationSec`, `positionSec`). The artwork is `content.thumbnailUrl`
+ * (Cast, Spotify, radio), rarely given.
+ * @returns {{ uri: string|null, kind: string|null, state: string|null, title: string|null,
+ *   artist: string|null, album: string|null, durationMs: number|null, positionMs: number|null,
+ *   artworkUrl: string|null }|null}
  */
 export function parsePlaying(list = []) {
   const main = list.find((entry) => !entry.output) ?? list[0];
@@ -154,11 +160,21 @@ export function parsePlaying(list = []) {
     return null;
   }
   const text = (value) => (typeof value === 'string' && value.trim() ? value.trim() : null);
+  const ms = (msec, sec) => {
+    const value = toNumber(msec) ?? (toNumber(sec) === null ? null : toNumber(sec) * 1000);
+    return value === null || value < 0 ? null : Math.round(value);
+  };
+  const artwork = text(main.content?.thumbnailUrl);
   return {
     uri: text(main.uri),
     kind: text(main.contentKind) ?? text(main.kind),
     state: text(main.stateInfo?.state),
     title: text(main.title),
+    artist: text(main.artist),
+    album: text(main.albumName),
+    durationMs: ms(main.durationMsec, main.durationSec),
+    positionMs: ms(main.positionMsec, main.positionSec),
+    artworkUrl: artwork && /^https?:\/\//i.test(artwork) ? artwork : null,
   };
 }
 

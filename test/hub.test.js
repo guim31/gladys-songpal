@@ -238,7 +238,8 @@ test('play, pause, next on a network source; refused on an input', async (t) => 
   assert.ok(speaker.calls.some((call) => call.method === 'setPlayNextContent'));
 
   await command(world, 'source', 'extInput:btAudio', speaker);
-  assert.equal(stateOf(world, 'playback', speaker), 0);
+  // An input: nothing loaded on the player (Gladys 5.3: IDLE).
+  assert.equal(stateOf(world, 'playback', speaker), 2);
   const refused = await command(world, 'pause', 1, speaker);
   assert.equal(refused.success, false);
   assert.match(refused.error, /cannot be paused/);

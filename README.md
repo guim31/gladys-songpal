@@ -23,6 +23,10 @@ API, are left to the [Sony Bravia TV](https://github.com/guim31/gladys-sony-brav
   mute, source (the inputs of the device, with their names), sound mode, night mode, voice
   enhancement (on/off, or the levels of the older sound bars), subwoofer level; play, pause,
   previous, next and the playback state for the dashboard **Music** box, on network sources.
+- **Gladys 5.3 Music player** (Gladys ≥ 5.3.0): title, artist, album, artwork (when the device
+  gives one), duration and position of what plays on a network, USB or Bluetooth source; the
+  playback state becomes writable (pause, play, stop), the position too (on a USB track), and the
+  mute becomes the music mute. See below.
 - **Real time**: the notifications the device pushes (power, volume, settings, source) are applied
   at once; the device is read again on the container's own timer, every 5 minutes while the
   notifications work, at the configured interval (10 s to 5 min) otherwise.
@@ -32,6 +36,32 @@ API, are left to the [Sony Bravia TV](https://github.com/guim31/gladys-sony-brav
   the previous source; **scene actions** _choose a source_ and _set the sound_ (mode, night, voice,
   volume in one step), both turning the device on first.
 - English, French, German and Spanish everywhere.
+
+## Gladys 5.3 Music player
+
+From 1.1.0, a device that can pause is a real player in the core's **Music** widget (to use
+first; the _Sony Audio remote_ widget stays for the source and the sound mode). What the Audio
+Control API gives (`getPlayingContentInfo`, `notifyPlayingContentInfo`):
+
+| Gladys (`music/…`)         | Sony API                                                      | Notes                                                                               |
+| -------------------------- | ------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| `playback_state`           | `stateInfo.state` PLAYING / PAUSED / STOPPED                  | an input (HDMI, TV, optical), standby or unreachable: `IDLE` (2), texts cleared     |
+| write 0 / 1 / 2            | `pausePlayingContent` (toggles) / same / `stopPlayingContent` | refused on an input                                                                 |
+| `title`, `artist`, `album` | `title`, `artist`, `albumName`                                | network, USB, Bluetooth sources only                                                |
+| `artwork`                  | `content.thumbnailUrl`                                        | rare (Cast, Spotify, radio); > 300 KB reduced in plain JS (`src/artwork-resize.js`) |
+| `duration`, `position`     | `durationMsec`, `positionMsec`                                | no position given: counted by the integration, frozen while paused                  |
+| write `position`           | `setPlayContent` 1.2 `{ uri, positionMsec }`                  | a USB track (`storage:` URI) only: the API has no seek method; refused elsewhere    |
+| `mute`, `volume`           | `getVolumeInformation`, `setAudioMute`                        | same external ids as 1.0 (`mute` converted from `switch/binary` in place)           |
+
+The music features go through `publishNowPlaying` (one batch per change, the position as a sample,
+never on a timer). Manifest `"music": {}`: no catalog, queue or search (the API's
+`getContentList` is undocumented per source and model), no shuffle or repeat
+(`getPlaybackModeSettings` targets `shuffleType` / `repeatType` exist, but no real answer with
+their values could be found).
+
+**Devices added with 1.0**: search again in the Discovery tab and click **Update**: the new
+features are added, the old ones keep their ids. On an input the playback state is now `2`
+(was `0`).
 
 ## Requirements
 
@@ -85,6 +115,16 @@ Gladys core (`test/gladys-rules.test.js`), the four languages, the search, every
 notification, widget and scene action, standby, an unplugged device, a new IP address, a restart
 from `/data`. One test runs the whole integration over real HTTP and WebSocket on the loopback
 interface (`test/helpers/songpalServer.js`, the fake device behind a `ws` server).
+
+**Music player (1.1.0)**: the now playing is tested with the real `notifyPlayingContentInfo` of
+an HT-ZF9 playing a USB track, browsing a folder (`kind: "directory"`), back on an input, and HDMI
+stopped (python-songpal logs quoted in rytilahti/python-songpal#52 and home-assistant/core#26776:
+`test/fixtures/songpal/ht-zf9-notifications.json`), in the tests and over real sockets (the real
+`src/app.js`, its HTTP client and WebSocket against the fake HT-ZF9 served by
+`test/helpers/songpalServer.js`, a 2.9 MB cover served by a real HTTP server behind a redirect,
+reduced to 95 KB). **Never on a real device**: whether `pausePlayingContent` resumes from
+`STOPPED`, the seek through `setPlayContent` with `positionMsec`, and `content.thumbnailUrl`
+outside python-songpal's documentation are not verified on hardware.
 
 **Not checked**: a real Sony device and a real Gladys. The exact answers of each model, the
 setting names (`soundField`, `nightMode`, `voice`, `subwooferLevel`), whether `pausePlayingContent`

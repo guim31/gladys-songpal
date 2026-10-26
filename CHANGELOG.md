@@ -10,6 +10,25 @@ the notes of the version's GitHub Release.
 
 ## [Unreleased]
 
+### Added
+
+- Gladys 5.3 Music player (needs Gladys 5.3.0 or later): title, artist, album, artwork (when the
+  device gives one, reduced when larger than Gladys accepts), duration and position of what plays
+  on a network, USB or Bluetooth source, published as one batch on each change, never on a timer.
+- The playback state is writable: pause (0), play (1), stop (2). The position is writable on a USB
+  track (the device plays it again from there); refused with a clear message elsewhere.
+- Manifest `"music": {}`: no catalog, queue or search, no shuffle or repeat.
+
+### Changed
+
+- **Playback** is `2` (stopped, nothing loaded) on an input (HDMI, TV, optical), in standby or when
+  the device is unreachable, instead of `0`: a scene waiting for `0` on an input must look for `2`.
+- **Mute** becomes the music mute (`music/mute`, same external id) on a device that can pause;
+  volume and mute of a player are published with the now playing.
+- Devices added with 1.0: search again in the Discovery tab and click **Update** to get the new
+  features; scenes and dashboards keep working (same ids).
+- `@gladysassistant/integration-sdk` 0.16.0.
+
 ## [1.0.1] - 2026-10-16
 
 ### Added

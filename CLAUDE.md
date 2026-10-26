@@ -286,6 +286,14 @@ lue dans python-songpal, GPL : lecture seule, et dans l'intégration HA `songpal
 - `pausePlayingContent` **bascule** lecture/pause (hypothèse non vérifiée sur matériel) : ne
   l'envoyer que si l'état diffère, et jamais sur une entrée (`contentKind: "input"`).
 
+- **Lecteur Musique 5.3 (1.1.0)** : `src/music.js` (publishNowPlaying, pochette). Une entrée
+  (`contentKind`/`kind` `input`, URI `extInput:`) = rien de chargé → IDLE, textes vides. Une
+  notification `kind: "directory"` (dossier USB parcouru) n'a pas d'état : l'ignorer (sinon le titre
+  clignote) ; une notification d'entrée n'en a pas non plus mais compte. Pas de méthode de seek :
+  `setPlayContent` 1.2 `{ uri, positionMsec }` sur un morceau `storage:` seulement (non vérifié sur
+  matériel). `shuffleType` / `repeatType` existent dans `getPlaybackModeSettings`, valeurs inconnues :
+  non publiés.
+
 **Pièges du cœur rencontrés ici**
 
 - La boîte **Musique** du front cherche les fonctionnalités par **type seul** et lit

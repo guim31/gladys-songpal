@@ -1,0 +1,25 @@
+{
+  "source": "notifyPlayingContentInfo of a real HT-ZF9 (python-songpal logs quoted in rytilahti/python-songpal#52 and home-assistant/core#26776, 2019-09-20); the logged fields are verbatim, `uri`, `source` and `contentKind` (known to python-songpal then, so not logged) are completed",
+  "usbTrack": {
+    "uri": "storage:usb1?path=%2FSony%2F01.flac",
+    "source": "storage:usb1",
+    "contentKind": "track",
+    "albumName": "Sony Sound Bar",
+    "artist": "Sony Corporation",
+    "durationMsec": 127795,
+    "mediaType": "music",
+    "parentUri": "storage:usb1?",
+    "positionMsec": 0,
+    "repeatType": "off",
+    "stateInfo": { "state": "PLAYING" },
+    "supplement": "noMedia",
+    "title": "Three Dimensional Surround Experience"
+  },
+  "input": { "kind": "input" },
+  "directory": { "kind": "directory" },
+  "hdmiStopped": {
+    "mediaType": "music",
+    "parentUri": "extInput:hdmi?port=1",
+    "stateInfo": { "state": "STOPPED" }
+  }
+}

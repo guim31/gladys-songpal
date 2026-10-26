@@ -3,20 +3,24 @@
 Answers of the Sony Audio Control API ("Songpal"), one file per product
 family, used by the fake device of the tests (`test/helpers/fakeSongpal.js`):
 
-| File              | Family                                | What it exercises                                                        |
-| ----------------- | ------------------------------------- | ------------------------------------------------------------------------ |
-| `ht-zf9.json`     | sound bar, 2018 (HT-ZF9, HT-XF9000…)  | on/off voice, subwoofer level, night mode, WebSocket on every service    |
-| `ht-st5000.json`  | sound bar, 2017 (HT-ST5000, HT-NT5…)  | voice levels (`type1`…), labelled input, hidden entry, older versions    |
-| `srs-x77.json`    | wireless speaker (SRS-X77, SRS-ZR7…)  | Wi-Fi MAC only, equalizer preset as sound mode, a network source playing |
-| `str-dn1080.json` | AV receiver (STR-DN1080, STR-AN1000…) | zones, labelled inputs, subwoofer level in the speaker settings (0.5 dB) |
-| `bravia-tv.json`  | Bravia TV (same API, `videoScreen`)   | left to the Sony Bravia integration                                      |
+| File                        | Family                                       | What it exercises                                                        |
+| --------------------------- | -------------------------------------------- | ------------------------------------------------------------------------ |
+| `ht-zf9.json`               | sound bar, 2018 (HT-ZF9, HT-XF9000…)         | on/off voice, subwoofer level, night mode, WebSocket on every service    |
+| `ht-st5000.json`            | sound bar, 2017 (HT-ST5000, HT-NT5…)         | voice levels (`type1`…), labelled input, hidden entry, older versions    |
+| `srs-x77.json`              | wireless speaker (SRS-X77, SRS-ZR7…)         | Wi-Fi MAC only, equalizer preset as sound mode, a network source playing |
+| `str-dn1080.json`           | AV receiver (STR-DN1080, STR-AN1000…)        | zones, labelled inputs, subwoofer level in the speaker settings (0.5 dB) |
+| `bravia-tv.json`            | Bravia TV (same API, `videoScreen`)          | left to the Sony Bravia integration                                      |
+| `ht-zf9-notifications.json` | real `notifyPlayingContentInfo` of an HT-ZF9 | USB track, folder browsed, input, HDMI stopped (see its `source`)        |
 
 Each file holds the answer of every method the integration reads
 (`responses`, keyed `service.method`), the UPnP description the device serves
 (`description`) and where (`address`, `location`). `../ssdp-results.json`
 holds the raw SSDP answers the Gladys core relays for these devices.
 
-**Provenance.** No real device was available. The answers are rebuilt in the
+**Provenance.** No real device was available. `ht-zf9-notifications.json` is the
+exception: real notifications of an HT-ZF9, logged by python-songpal and quoted in
+rytilahti/python-songpal#52 and home-assistant/core#26776 (the fields python-songpal
+did not log, `uri`, `source`, `contentKind`, are completed). The others: The answers are rebuilt in the
 shapes of the Sony Audio Control API reference (developer.sony.com, "API
 references" of the `guide`, `system`, `audio` and `avContent` services), and
 the lists of methods, notifications and settings of each family follow the

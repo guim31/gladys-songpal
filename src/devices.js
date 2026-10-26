@@ -20,13 +20,25 @@
 //   - subwoofer: switch/dimmer, writable, bounds of the device (a second
 //     `volume` type would let the core's Music box pick it as the volume);
 //   - play, pause, previous, next and playback state: the music couples, as
-//     the core's Music box wants them all, when the device can pause.
+//     the core's Music box wants them all, when the device can pause;
+//   - and then the Gladys 5.3 music player (capabilities/music.md): the
+//     playback state becomes writable (0 pause, 1 play, 2 stop), title,
+//     artist, album, artwork, duration, position (writable: the seek of a USB
+//     track), and the mute becomes music/mute (same external id). No shuffle
+//     or repeat: their values are not documented anywhere we could check.
+//
+// The music features are published by publishNowPlaying (src/music.js), the
+// others by publishChangedStates (featureValues).
 //
 // The devices are published with should_poll: false: the integration reads
 // them on its own timer and receives their notifications (src/hub.js).
 // -----------------------------------------------------------------------------
 
-import { DEVICE_FEATURE_CATEGORIES, DEVICE_FEATURE_TYPES } from '@gladysassistant/integration-sdk';
+import {
+  DEVICE_FEATURE_CATEGORIES,
+  DEVICE_FEATURE_TYPES,
+  DEVICE_FEATURE_UNITS,
+} from '@gladysassistant/integration-sdk';
 
 export const DEVICE_TYPE = 'audio';
 export const ENDPOINT_PARAM = 'SONGPAL_ENDPOINT';
@@ -47,6 +59,25 @@ export const FEATURE_KEYS = Object.freeze({
   PREVIOUS: 'previous',
   NEXT: 'next',
   PLAYBACK: 'playback',
+  TITLE: 'title',
+  ARTIST: 'artist',
+  ALBUM: 'album',
+  ARTWORK: 'artwork',
+  DURATION: 'duration',
+  POSITION: 'position',
+});
+
+/** Music type → feature key, for publishNowPlaying (the 1.0 ids are kept). */
+export const MUSIC_KEYS = Object.freeze({
+  playback_state: FEATURE_KEYS.PLAYBACK,
+  volume: FEATURE_KEYS.VOLUME,
+  mute: FEATURE_KEYS.MUTE,
+  title: FEATURE_KEYS.TITLE,
+  artist: FEATURE_KEYS.ARTIST,
+  album: FEATURE_KEYS.ALBUM,
+  artwork: FEATURE_KEYS.ARTWORK,
+  duration: FEATURE_KEYS.DURATION,
+  position: FEATURE_KEYS.POSITION,
 });
 
 // Write-only buttons: they have no state.
@@ -69,7 +100,7 @@ export const SETTING_TARGETS = Object.freeze({
 });
 
 // `MUSIC_PLAYBACK_STATE` of the core.
-export const PLAYBACK_STATE = Object.freeze({ PLAYING: 1, PAUSED: 0 });
+export const PLAYBACK_STATE = Object.freeze({ PAUSED: 0, PLAYING: 1, IDLE: 2, BUFFERING: 3 });
 
 // Feature names, in the language chosen in the configuration (Gladys does not
 // tell a device integration the user's language). Frozen at creation in Gladys.
@@ -88,6 +119,12 @@ export const NAMES = {
     [FEATURE_KEYS.PREVIOUS]: 'Previous',
     [FEATURE_KEYS.NEXT]: 'Next',
     [FEATURE_KEYS.PLAYBACK]: 'Playback',
+    [FEATURE_KEYS.TITLE]: 'Title',
+    [FEATURE_KEYS.ARTIST]: 'Artist',
+    [FEATURE_KEYS.ALBUM]: 'Album',
+    [FEATURE_KEYS.ARTWORK]: 'Artwork',
+    [FEATURE_KEYS.DURATION]: 'Duration',
+    [FEATURE_KEYS.POSITION]: 'Position',
   },
   fr: {
     [FEATURE_KEYS.POWER]: 'Marche / veille',
@@ -103,6 +140,12 @@ export const NAMES = {
     [FEATURE_KEYS.PREVIOUS]: 'Précédent',
     [FEATURE_KEYS.NEXT]: 'Suivant',
     [FEATURE_KEYS.PLAYBACK]: 'Lecture en cours',
+    [FEATURE_KEYS.TITLE]: 'Titre',
+    [FEATURE_KEYS.ARTIST]: 'Artiste',
+    [FEATURE_KEYS.ALBUM]: 'Album',
+    [FEATURE_KEYS.ARTWORK]: 'Pochette',
+    [FEATURE_KEYS.DURATION]: 'Durée',
+    [FEATURE_KEYS.POSITION]: 'Position',
   },
   de: {
     [FEATURE_KEYS.POWER]: 'Ein / Standby',
@@ -118,6 +161,12 @@ export const NAMES = {
     [FEATURE_KEYS.PREVIOUS]: 'Zurück',
     [FEATURE_KEYS.NEXT]: 'Weiter',
     [FEATURE_KEYS.PLAYBACK]: 'Wiedergabestatus',
+    [FEATURE_KEYS.TITLE]: 'Titel',
+    [FEATURE_KEYS.ARTIST]: 'Interpret',
+    [FEATURE_KEYS.ALBUM]: 'Album',
+    [FEATURE_KEYS.ARTWORK]: 'Cover',
+    [FEATURE_KEYS.DURATION]: 'Dauer',
+    [FEATURE_KEYS.POSITION]: 'Position',
   },
   es: {
     [FEATURE_KEYS.POWER]: 'Encendido / espera',
@@ -133,6 +182,12 @@ export const NAMES = {
     [FEATURE_KEYS.PREVIOUS]: 'Anterior',
     [FEATURE_KEYS.NEXT]: 'Siguiente',
     [FEATURE_KEYS.PLAYBACK]: 'Reproducción',
+    [FEATURE_KEYS.TITLE]: 'Título',
+    [FEATURE_KEYS.ARTIST]: 'Artista',
+    [FEATURE_KEYS.ALBUM]: 'Álbum',
+    [FEATURE_KEYS.ARTWORK]: 'Carátula',
+    [FEATURE_KEYS.DURATION]: 'Duración',
+    [FEATURE_KEYS.POSITION]: 'Posición',
   },
 };
 
@@ -208,6 +263,24 @@ const select = (key) => ({
   },
 });
 
+// A music feature of the 5.3 player: writable ones confirm their writes.
+const music = (key, type, { writable = false, max = 0, unit } = {}) => ({
+  key,
+  definition: {
+    category: DEVICE_FEATURE_CATEGORIES.MUSIC,
+    type,
+    read_only: !writable,
+    has_feedback: writable,
+    keep_history: false,
+    min: 0,
+    max,
+    ...(unit ? { unit } : {}),
+  },
+});
+
+// Longest track or stream position published, in seconds (a day).
+const LONG = 24 * 60 * 60;
+
 const push = (key, type) => ({
   key,
   definition: {
@@ -248,7 +321,13 @@ export function featureList(caps, language) {
         max: caps.volume.max,
       },
     });
-    features.push(binary(FEATURE_KEYS.MUTE, false));
+    // Music mute on a player (Gladys 5.3), a switch on a device that only has
+    // a volume (the same external id: Gladys converts it in place).
+    features.push(
+      caps.playback
+        ? music(FEATURE_KEYS.MUTE, DEVICE_FEATURE_TYPES.MUSIC.MUTE, { writable: true, max: 1 })
+        : binary(FEATURE_KEYS.MUTE, false),
+    );
   }
   if (caps.sources.length > 0) {
     features.push({ ...select(FEATURE_KEYS.SOURCE), options: sourceOptions(caps, language) });
@@ -284,18 +363,23 @@ export function featureList(caps, language) {
       push(FEATURE_KEYS.PAUSE, DEVICE_FEATURE_TYPES.MUSIC.PAUSE),
       push(FEATURE_KEYS.PREVIOUS, DEVICE_FEATURE_TYPES.MUSIC.PREVIOUS),
       push(FEATURE_KEYS.NEXT, DEVICE_FEATURE_TYPES.MUSIC.NEXT),
-      {
-        key: FEATURE_KEYS.PLAYBACK,
-        definition: {
-          category: DEVICE_FEATURE_CATEGORIES.MUSIC,
-          type: DEVICE_FEATURE_TYPES.MUSIC.PLAYBACK_STATE,
-          read_only: true,
-          has_feedback: true,
-          keep_history: false,
-          min: 0,
-          max: 1,
-        },
-      },
+      music(FEATURE_KEYS.PLAYBACK, DEVICE_FEATURE_TYPES.MUSIC.PLAYBACK_STATE, {
+        writable: true,
+        max: 2,
+      }),
+      music(FEATURE_KEYS.TITLE, DEVICE_FEATURE_TYPES.MUSIC.TITLE),
+      music(FEATURE_KEYS.ARTIST, DEVICE_FEATURE_TYPES.MUSIC.ARTIST),
+      music(FEATURE_KEYS.ALBUM, DEVICE_FEATURE_TYPES.MUSIC.ALBUM),
+      music(FEATURE_KEYS.ARTWORK, DEVICE_FEATURE_TYPES.MUSIC.ARTWORK),
+      music(FEATURE_KEYS.DURATION, DEVICE_FEATURE_TYPES.MUSIC.DURATION, {
+        max: LONG,
+        unit: DEVICE_FEATURE_UNITS.SECONDS,
+      }),
+      music(FEATURE_KEYS.POSITION, DEVICE_FEATURE_TYPES.MUSIC.POSITION, {
+        writable: true,
+        max: LONG,
+        unit: DEVICE_FEATURE_UNITS.SECONDS,
+      }),
     );
   }
   return features;
@@ -361,7 +445,8 @@ export function featureValues(gladys, record) {
     // In standby the other reads mean nothing (or fail): nothing to say.
     return values;
   }
-  if (has.has(FEATURE_KEYS.VOLUME) && snapshot.volume) {
+  // A player's volume and mute go through publishNowPlaying (src/music.js).
+  if (has.has(FEATURE_KEYS.VOLUME) && snapshot.volume && !caps.playback) {
     const { min, max } = caps.volume;
     add(FEATURE_KEYS.VOLUME, Math.min(max, Math.max(min, snapshot.volume.volume)));
     add(FEATURE_KEYS.MUTE, snapshot.volume.mute ? 1 : 0);
@@ -401,14 +486,6 @@ export function featureValues(gladys, record) {
       const { min, max } = caps.subwoofer;
       add(FEATURE_KEYS.SUBWOOFER, Math.min(max, Math.max(min, level)));
     }
-  }
-  if (has.has(FEATURE_KEYS.PLAYBACK) && snapshot.playing) {
-    add(
-      FEATURE_KEYS.PLAYBACK,
-      snapshot.playing.state === 'PLAYING' && snapshot.playing.kind !== 'input'
-        ? PLAYBACK_STATE.PLAYING
-        : PLAYBACK_STATE.PAUSED,
-    );
   }
   return values;
 }

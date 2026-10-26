@@ -102,7 +102,17 @@ test('the inputs, without the zones and the hidden entries', () => {
 test('the source in use: what plays, else the active input, null on a network source', () => {
   const sources = parseSources(list('ht-zf9', 'avContent.getCurrentExternalTerminalsStatus'));
   const tv = parsePlaying(list('ht-zf9', 'avContent.getPlayingContentInfo'));
-  assert.deepEqual(tv, { uri: 'extInput:tv', kind: 'input', state: 'PLAYING', title: null });
+  assert.deepEqual(tv, {
+    uri: 'extInput:tv',
+    kind: 'input',
+    state: 'PLAYING',
+    title: null,
+    artist: null,
+    album: null,
+    durationMs: null,
+    positionMs: null,
+    artworkUrl: null,
+  });
   assert.equal(currentSourceUri(tv, sources), 'extInput:tv');
   const spotify = parsePlaying(list('srs-x77', 'avContent.getPlayingContentInfo'));
   assert.equal(spotify.kind, 'service');

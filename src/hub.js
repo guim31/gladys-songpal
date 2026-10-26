@@ -21,7 +21,9 @@ import { DEVICE_TRANSPORTS, createLogger } from '@gladysassistant/integration-sd
 import { hostOf } from './config.js';
 import {
   FEATURE_KEYS,
+  MUSIC_KEYS,
   OTHER_SOURCE,
+  PLAYBACK_STATE,
   SETTING_TARGETS,
   buildDevice,
   deviceIds,
@@ -31,6 +33,7 @@ import {
   platformIdOf,
 } from './devices.js';
 import { createIssueLog } from './issues.js';
+import { countPosition, isInput, nowPlayingOf, playbackStateOf } from './music.js';
 import { ERROR_KINDS, SongpalClient, SongpalError } from './songpal/client.js';
 import {
   SCAN_TIMEOUT_SECONDS,
@@ -119,7 +122,9 @@ const emptySnapshot = () => ({
 
 // Play, pause, next and previous only mean something on a network or USB
 // source: an input (HDMI, TV, optical) plays whatever its device sends.
-const canPause = (record) => record.snapshot.playing?.kind !== 'input';
+const canPause = (record) =>
+  record.snapshot.playing?.kind !== 'input' &&
+  !/^extInput:/.test(record.snapshot.playing?.uri ?? '');
 
 const isActive = (record) => record.snapshot.reachable !== false && isOn(record.snapshot.power);
 
@@ -898,6 +903,7 @@ export class SongpalHub {
         this.issues.fail('states', `States of ${deviceName(record)} refused: ${err.message}`);
       }
     }
+    await this.publishMusic(record);
     const transport =
       record.snapshot.reachable === false
         ? DEVICE_TRANSPORTS.UNREACHABLE
@@ -911,6 +917,49 @@ export class SongpalHub {
       } catch (err) {
         logger.debug(`Transport of ${deviceName(record)} refused: ${err.message}`);
       }
+    }
+  }
+
+  /**
+   * The Gladys 5.3 music player of a device that can pause: publishNowPlaying
+   * diffs it (volume and mute included, one channel per feature). Published
+   * even before the user clicks "Update" on a 1.0 device: Gladys ignores the
+   * features it does not have yet, and the SDK publishes everything again
+   * after the update.
+   */
+  async publishMusic(record) {
+    if (!record.caps.playback) {
+      return;
+    }
+    const counted = countPosition(record);
+    const nowPlaying = nowPlayingOf(record, counted);
+    if (!nowPlaying) {
+      return;
+    }
+    const ids = deviceIds(this.gladys, record.platformId);
+    // publishNowPlaying has no heartbeat: everything again every 6 hours.
+    if (record.musicAt === undefined) {
+      record.musicAt = this.now();
+    } else if (this.now() - record.musicAt >= this.timings.heartbeatMs) {
+      record.musicAt = this.now();
+      this.gladys.forgetPublishedStates(ids.device);
+    }
+    const features = new Set(
+      buildDevice(this.gladys, record, 'en').features.map((feature) => feature.external_id),
+    );
+    const featureExternalIds = {};
+    for (const [type, key] of Object.entries(MUSIC_KEYS)) {
+      if (features.has(ids.feature(key))) {
+        featureExternalIds[type] = ids.feature(key);
+      } else {
+        delete nowPlaying[type === 'artwork' ? 'artwork_url' : type];
+      }
+    }
+    try {
+      await this.gladys.publishNowPlaying(ids.device, nowPlaying, { featureExternalIds });
+      this.issues.ok('music', 'Music states: working again');
+    } catch (err) {
+      this.issues.fail('music', `Music states of ${deviceName(record)} refused: ${err.message}`);
     }
   }
 
@@ -1031,8 +1080,15 @@ export class SongpalHub {
       }
       case 'notifyPlayingContentInfo': {
         // The main output only: '' (sound bars, speakers) or zone 1 (receivers).
-        if (!params.output || /zone=1$/.test(params.output)) {
-          snapshot.playing = parsePlaying([params]);
+        // An entry without a state that is not an input (`kind: "directory"`
+        // while a USB folder is browsed) says nothing about what plays: read
+        // again only. An input comes without a state (HT-ZF9).
+        const playing = parsePlaying([params]);
+        if (
+          (!params.output || /zone=1$/.test(params.output)) &&
+          (playing.state || isInput(playing))
+        ) {
+          snapshot.playing = playing;
           if (snapshot.sources) {
             snapshot.sourceUri = currentSourceUri(snapshot.playing, snapshot.sources);
             snapshot.sourceKnown = true;
@@ -1280,6 +1336,55 @@ export class SongpalHub {
     }
   }
 
+  /** The playback state written from Gladys: 0 pause, 1 play, 2 stop. */
+  async setPlaybackState(record, value) {
+    const state = Number(value);
+    if (state === PLAYBACK_STATE.IDLE) {
+      return this.stopPlayback(record);
+    }
+    if (state === PLAYBACK_STATE.PLAYING || state === PLAYBACK_STATE.PAUSED) {
+      return this.playPause(record, state === PLAYBACK_STATE.PLAYING);
+    }
+    throw failure(this.language, 'badPlaybackState');
+  }
+
+  async stopPlayback(record) {
+    if (!canPause(record)) {
+      throw failure(this.language, 'noPlayback', { name: deviceName(record) });
+    }
+    logger.info(`${deviceName(record)}: stop`);
+    if (playbackStateOf(record.snapshot.playing) === PLAYBACK_STATE.IDLE) {
+      return;
+    }
+    await this.run(record, (client) => client.stopPlayingContent());
+    await this.commanded(record, {
+      playing: { ...record.snapshot.playing, state: 'STOPPED' },
+    });
+  }
+
+  /**
+   * Move within the track: the device has no seek method, but plays a USB
+   * track from a position (setPlayContent 1.2). Anything else is refused.
+   */
+  async seek(record, seconds) {
+    const playing = record.snapshot.playing;
+    const position = Number(seconds);
+    if (
+      !Number.isFinite(position) ||
+      !canPause(record) ||
+      !/^storage:/.test(playing?.uri ?? '') ||
+      record.client.versionOf('avContent', 'setPlayContent') !== '1.2'
+    ) {
+      throw failure(this.language, 'noSeek', { name: deviceName(record) });
+    }
+    const target = Math.max(0, Math.round(position));
+    logger.info(`${deviceName(record)}: seek to ${target} s`);
+    await this.run(record, (client) => client.playContentAt(playing.uri, target * 1000));
+    await this.commanded(record, {
+      playing: { ...playing, positionMs: target * 1000 },
+    });
+  }
+
   async skip(record, forward) {
     if (!canPause(record)) {
       throw failure(this.language, 'noPlayback', { name: deviceName(record) });
@@ -1320,6 +1425,10 @@ export class SongpalHub {
           return this.skip(record, true);
         case FEATURE_KEYS.PREVIOUS:
           return this.skip(record, false);
+        case FEATURE_KEYS.PLAYBACK:
+          return this.setPlaybackState(record, value);
+        case FEATURE_KEYS.POSITION:
+          return this.seek(record, value);
         default:
           throw failure(this.language, 'noFeature', { name: deviceName(record) });
       }

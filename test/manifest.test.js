@@ -80,8 +80,9 @@ test('categories need Gladys >= 4.86.0, triggers, scene actions and widgets 5.1.
   const declared = CAPABILITY_FIELDS.filter((field) => manifest[field] !== undefined);
   assert.deepEqual(declared, CAPABILITY_FIELDS);
   assert.ok(isAtLeast(minGladysVersion(), [5, 1, 0]));
-  // No widget button opens a form (#3168, Gladys 5.2.0): 5.1.0 is enough.
-  assert.equal(manifest.gladys_version, '>=5.1.0');
+  // The music player (`music`, Gladys 5.3.0) needs the newest core.
+  assert.equal(manifest.gladys_version, '>=5.3.0');
+  assert.deepEqual(manifest.music, {});
 });
 
 test('every scene_actions key has a handler, and returns the declared outputs', async (t) => {
