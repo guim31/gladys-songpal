@@ -15,7 +15,7 @@
 
 import { createLogger } from '@gladysassistant/integration-sdk';
 import { MAX_ARTWORK_DOWNLOAD, prepareArtwork, readLimited } from './artwork-resize.js';
-import { PLAYBACK_STATE } from './devices.js';
+import { PLAYBACK_STATE, volumeToPercent } from './devices.js';
 
 const logger = createLogger({ name: 'songpal-music' });
 
@@ -24,11 +24,36 @@ const STATES = {
   PAUSED: PLAYBACK_STATE.PAUSED,
   STOPPED: PLAYBACK_STATE.IDLE,
   BUFFERING: PLAYBACK_STATE.BUFFERING,
+  // Fast forward or rewind: the track still plays.
+  FORWARDING: PLAYBACK_STATE.PLAYING,
+  REWINDING: PLAYBACK_STATE.PLAYING,
 };
 
-/** What plays is an input (HDMI, TV, optical…): nothing loaded on the player. */
+/**
+ * What plays is an input (HDMI, TV, optical…): nothing loaded on the player.
+ * A stopped HDMI input comes with its `parentUri` only (HT-ZF9).
+ */
 export const isInput = (playing) =>
-  playing?.kind === 'input' || /^extInput:/.test(playing?.uri ?? '');
+  playing?.kind === 'input' ||
+  /^extInput:/.test(playing?.uri ?? '') ||
+  /^extInput:/.test(playing?.parentUri ?? '');
+
+/**
+ * The position of what plays at `now`, in ms: the device's sample
+ * (`positionMs`, taken at `sampledAt`) moved on while it plays. Null when the
+ * device gave none.
+ */
+export function positionAt(playing, now) {
+  const positionMs = playing?.positionMs ?? null;
+  if (positionMs === null) {
+    return null;
+  }
+  let position = positionMs;
+  if (playbackStateOf(playing) === PLAYBACK_STATE.PLAYING && playing.sampledAt) {
+    position += Math.max(0, now - playing.sampledAt);
+  }
+  return playing.durationMs ? Math.min(position, playing.durationMs) : position;
+}
 
 /** The playback state of what plays (an input or an unknown state: idle). */
 export function playbackStateOf(playing) {
@@ -54,10 +79,13 @@ const NOTHING = Object.freeze({
  * idle, every text cleared. A device that did not give its position (a
  * stream, some sources) gets the one the integration counts (`counted`, in
  * seconds): a 0 published while playing would be republished at each read.
+ * A position the device gave is moved on to `now`: a sample minutes old,
+ * republished as is, would move the progress bar back.
  * @param {object} record a hub record ({ snapshot, caps })
  * @param {number} [counted]
+ * @param {number} [now]
  */
-export function nowPlayingOf(record, counted = 0) {
+export function nowPlayingOf(record, counted = 0, now = Date.now()) {
   const { snapshot, caps } = record;
   if (snapshot.reachable === false || (snapshot.power && snapshot.power !== 'active')) {
     return { ...NOTHING };
@@ -67,8 +95,7 @@ export function nowPlayingOf(record, counted = 0) {
   }
   const nowPlaying = {};
   if (caps.volume && snapshot.volume) {
-    const { min, max } = caps.volume;
-    nowPlaying.volume = Math.min(max, Math.max(min, snapshot.volume.volume));
+    nowPlaying.volume = volumeToPercent(snapshot.volume.volume, caps.volume);
     nowPlaying.mute = snapshot.volume.mute ? 1 : 0;
   }
   const playing = snapshot.playing;
@@ -80,7 +107,7 @@ export function nowPlayingOf(record, counted = 0) {
     return { ...NOTHING, ...nowPlaying };
   }
   const durationMs = playing.durationMs ?? null;
-  const positionMs = playing.positionMs ?? null;
+  const positionMs = positionAt(playing, now);
   const duration = durationMs === null ? 0 : Math.round(durationMs / 1000);
   let position = positionMs === null ? Math.max(0, Math.floor(counted)) : positionMs / 1000;
   if (duration > 0) {
@@ -131,7 +158,10 @@ const REDIRECTS = 3;
 /** Loopback or unspecified: never fetched (the container itself). */
 function isLocalHost(hostname) {
   const host = hostname.replace(/^\[|\]$/g, '').toLowerCase();
-  return /^(localhost|127\.\d+\.\d+\.\d+|0\.0\.0\.0|::1?|::ffff:127\..*)$/.test(host);
+  // URL writes [::ffff:127.0.0.1] as [::ffff:7f00:1].
+  return /^(localhost|127\.\d+\.\d+\.\d+|0\.0\.0\.0|::1?|::ffff:127\..*|::ffff:7f[0-9a-f]{2}:[0-9a-f]{1,4})$/.test(
+    host,
+  );
 }
 
 /**

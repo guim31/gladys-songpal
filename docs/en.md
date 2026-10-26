@@ -27,7 +27,7 @@ Sony Bravia TVs use the same API but are left to the **Sony Bravia TV** integrat
 
 ## Requirements
 
-- Gladys 5.1.0 or later.
+- Gladys 5.3.0 or later.
 - The device connected to your network (Wi-Fi or Ethernet), set up once with the Sony Music
   Center app.
 - **Network standby on** ("Network standby", "Quick start" or "Remote start", depending on the
@@ -65,7 +65,7 @@ device has are created:
 | Feature                                     | Gladys type                          | What it does                                                                                                                                               |
 | ------------------------------------------- | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Power**                                   | switch (on/off)                      | On / standby.                                                                                                                                              |
-| **Volume**                                  | music volume                         | The volume, in the units of the device (often 0 to 50, 0 to 74 on a receiver).                                                                             |
+| **Volume**                                  | music volume                         | The volume, in percent (100 % = the device's maximum). The scene action keeps the device's units.                                                          |
 | **Mute**                                    | music mute (switch without a player) | Mute on / off.                                                                                                                                             |
 | **Source**                                  | list                                 | The inputs of the device (HDMI, TV, optical, analog, Bluetooth…), with the names set on it. "Other (network, app)" while Spotify, Chromecast or USB plays. |
 | **Sound mode**                              | list                                 | The sound fields of the device (Standard, Movie, Music…), or the equalizer presets of a speaker.                                                           |

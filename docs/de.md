@@ -30,7 +30,7 @@ Sony-Bravia-Fernseher nutzen dieselbe API, bleiben aber der Integration **Sony B
 
 ## Voraussetzungen
 
-- Gladys 5.1.0 oder neuer.
+- Gladys 5.3.0 oder neuer.
 - Das Gerät mit deinem Netzwerk verbunden (WLAN oder Ethernet), einmal mit der App Sony Music
   Center eingerichtet.
 - **Netzwerk-Standby an** („Netzwerk-Standby“, „Schnellstart“ oder „Fernstart“, je nach Modell):
@@ -69,7 +69,7 @@ die Funktionen, die das Gerät hat, werden angelegt:
 | Funktion                                          | Gladys-Typ                                  | Was sie tut                                                                                                                                                              |
 | ------------------------------------------------- | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **Ein / Standby**                                 | Schalter                                    | Ein / Standby.                                                                                                                                                           |
-| **Lautstärke**                                    | Musiklautstärke                             | Die Lautstärke, in den Einheiten des Geräts (oft 0 bis 50, 0 bis 74 bei einem Receiver).                                                                                 |
+| **Lautstärke**                                    | Musiklautstärke                             | Die Lautstärke, in Prozent (100 % = Maximum des Geräts). Die Szenenaktion behält die Einheiten des Geräts.                                                               |
 | **Stumm**                                         | Musik-Stummschaltung (Schalter ohne Player) | Stummschaltung an / aus.                                                                                                                                                 |
 | **Quelle**                                        | Liste                                       | Die Eingänge des Geräts (HDMI, TV, optisch, analog, Bluetooth…), mit den dort eingestellten Namen. „Andere (Netzwerk, App)“, solange Spotify, Chromecast oder USB läuft. |
 | **Klangmodus**                                    | Liste                                       | Die Klangfelder des Geräts (Standard, Film, Musik…) oder die Equalizer-Voreinstellungen eines Lautsprechers.                                                             |

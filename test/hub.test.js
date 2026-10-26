@@ -68,7 +68,8 @@ test('the search finds the Sony audio devices, not the TV nor the noise', async 
   await createAll(world);
   await settle();
   assert.equal(stateOf(world, 'power'), 1);
-  assert.equal(stateOf(world, 'volume'), 15);
+  // In percent of the device's 0–50 (the core's Music box slides to 100).
+  assert.equal(stateOf(world, 'volume'), 30);
   assert.equal(stateOf(world, 'source'), 'extInput:tv');
   assert.ok(world.network.WebSocket.opened.length >= 3);
   assert.ok([...world.hub.records.values()].every((record) => record.notifying));
@@ -124,13 +125,14 @@ test('power, volume, mute: the device follows, the states too', async (t) => {
   // Already on: the device answers 40000, a success.
   assert.equal((await command(world, 'power', 1)).success, true);
 
-  await command(world, 'volume', 32);
+  // The feature is in percent: 64 % of the HT-ZF9's 0–50 is 32.
+  await command(world, 'volume', 64);
   assert.equal(device.mainVolume.volume, 32);
-  assert.equal(stateOf(world, 'volume'), 32);
-  // Beyond the bounds of the device: clamped, never refused.
-  await command(world, 'volume', 80);
+  assert.equal(stateOf(world, 'volume'), 64);
+  // Beyond 100 %: clamped, never refused.
+  await command(world, 'volume', 180);
   assert.equal(device.mainVolume.volume, 50);
-  assert.equal(stateOf(world, 'volume'), 50);
+  assert.equal(stateOf(world, 'volume'), 100);
   const setVolume = device.calls.filter((call) => call.method === 'setAudioVolume').at(-1);
   assert.deepEqual(setVolume, {
     service: 'audio',
@@ -199,7 +201,8 @@ test('voice levels on a 2017 sound bar, subwoofer in half dB on a receiver', asy
   );
 
   const receiverDevice = deviceOf(world, receiver);
-  assert.equal(featureOf(receiverDevice, 'volume').max, 74);
+  assert.equal(featureOf(receiverDevice, 'volume').max, 100);
+  assert.equal(featureOf(receiverDevice, 'volume').unit, 'percent');
   assert.equal(featureOf(receiverDevice, 'subwoofer').min, -10);
   assert.equal(stateOf(world, 'subwoofer', receiver), -2.5);
   await command(world, 'subwoofer', 3.3, receiver);
@@ -211,7 +214,8 @@ test('voice levels on a 2017 sound bar, subwoofer in half dB on a receiver', asy
       (option) => !option.value.startsWith('extOutput:'),
     ),
   );
-  await command(world, 'volume', 40, receiver);
+  // 54 % of the receiver's 0–74: 40.
+  await command(world, 'volume', 54, receiver);
   assert.equal(receiver.volumes[0].volume, 40);
   assert.equal(receiver.volumes[1].volume, 20);
   assert.equal(stateOf(world, 'mute', receiver), 0);
@@ -280,7 +284,7 @@ test('the remote, the TV or the app: the notifications update Gladys at once', a
 
   device.changeVolume(27);
   await settle();
-  assert.equal(stateOf(world, 'volume'), 27);
+  assert.equal(stateOf(world, 'volume'), 54);
   device.changeVolume(27, true);
   await settle();
   assert.equal(stateOf(world, 'mute'), 1);
@@ -359,7 +363,7 @@ test('the notifications come back after the device was unplugged', async (t) => 
   assert.equal(record.notifying, true);
   device.changeVolume(9);
   await settle();
-  assert.equal(stateOf(world, 'volume'), 9);
+  assert.equal(stateOf(world, 'volume'), 18);
 });
 
 // --- Standby, unplugged, moved -------------------------------------------------
@@ -423,7 +427,7 @@ test('a new IP address: the search moves the device, same Gladys device', async 
   assert.equal(world.fake.lastState(`${external}:power`), 1);
   moved.changeVolume(31);
   await settle();
-  assert.equal(world.fake.lastState(`${external}:volume`), 31);
+  assert.equal(world.fake.lastState(`${external}:volume`), 62);
 });
 
 // --- Configuration ---------------------------------------------------------------
@@ -490,7 +494,7 @@ test('a device in Gladys whose /data was lost: identified again from its params'
     second.fake.discoveredDevices.map((item) => item.external_id),
     created.map((item) => item.external_id),
   );
-  assert.equal(stateOf(second, 'volume', device), 12);
+  assert.equal(stateOf(second, 'volume', device), 40);
 });
 
 test('"Test the connection" reports every device', async (t) => {
@@ -554,5 +558,5 @@ test('a reading that overlaps a command is not applied', async (t) => {
   await world.hub.setVolume(record, 20);
   await reading;
   device.handle = original;
-  assert.equal(stateOf(world, 'volume'), 20);
+  assert.equal(stateOf(world, 'volume'), 40);
 });

@@ -95,7 +95,7 @@ test('a problem that lasts: one line, then one when it is gone', async (t) => {
   await world.hub.pollAll({ force: true });
   assert.equal(lines.length, 2, lines.join('\n'));
   assert.match(lines[1], /\[INFO\].*States: working again/);
-  assert.equal(stateOf(world, 'volume'), 43);
+  assert.equal(stateOf(world, 'volume'), 86);
 });
 
 test('one line per user action, and never the credentials of an address', async (t) => {
@@ -108,7 +108,7 @@ test('one line per user action, and never the credentials of an address', async 
   await world.fake.setValue(
     discovered,
     discovered.features.find((f) => f.external_id.endsWith(':volume')),
-    25,
+    50,
   );
   await world.fake.action('test_connection', {});
   await world.fake.configUpdated({ hosts: 'http://admin:s3cr3t-pass@192.0.2.97/', language: 'en' });
@@ -131,23 +131,23 @@ test('the container reads the devices on its own timer, without any poll from Gl
   t.after(() => world.app.stop());
   assert.equal(deviceOf(world).should_poll, false);
   // Nothing here calls `fake.poll` (the onPoll of Gladys): only the timer reads.
-  assert.equal(stateOf(world, 'volume'), 15);
+  assert.equal(stateOf(world, 'volume'), 30);
   const interval = world.hub.config.pollIntervalMs;
   world.device.mainVolume.volume = 33;
   world.clock.advance(interval);
   t.mock.timers.tick(interval);
-  for (let turn = 0; turn < 200 && stateOf(world, 'volume') !== 33; turn += 1) {
+  for (let turn = 0; turn < 200 && stateOf(world, 'volume') !== 66; turn += 1) {
     await new Promise((resolve) => setImmediate(resolve));
   }
-  assert.equal(stateOf(world, 'volume'), 33);
+  assert.equal(stateOf(world, 'volume'), 66);
   // And again at the next interval: the timer is set again after each read.
   world.device.mainVolume.volume = 34;
   world.clock.advance(interval);
   t.mock.timers.tick(interval);
-  for (let turn = 0; turn < 200 && stateOf(world, 'volume') !== 34; turn += 1) {
+  for (let turn = 0; turn < 200 && stateOf(world, 'volume') !== 68; turn += 1) {
     await new Promise((resolve) => setImmediate(resolve));
   }
-  assert.equal(stateOf(world, 'volume'), 34);
+  assert.equal(stateOf(world, 'volume'), 68);
 });
 
 test('while the notifications work, the timer reads every 5 minutes only', async (t) => {

@@ -85,6 +85,9 @@ export function registerHandlers(gladys, options = {}) {
   );
 
   gladys.onDeviceCreated(whenReady((device) => hub.onDeviceCreated(device)));
+  // "Update" in Discover: the SDK forgot what it published, the new features
+  // (the 5.3 player) get their states now, not at the next read.
+  gladys.onDeviceUpdated(whenReady((device) => hub.onDeviceCreated(device)));
   gladys.onDeviceDeleted(whenReady((device) => hub.onDeviceDeleted(device)));
 
   gladys.onConfigUpdated(

@@ -104,6 +104,7 @@ test('the source in use: what plays, else the active input, null on a network so
   const tv = parsePlaying(list('ht-zf9', 'avContent.getPlayingContentInfo'));
   assert.deepEqual(tv, {
     uri: 'extInput:tv',
+    parentUri: null,
     kind: 'input',
     state: 'PLAYING',
     title: null,

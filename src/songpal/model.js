@@ -167,6 +167,7 @@ export function parsePlaying(list = []) {
   const artwork = text(main.content?.thumbnailUrl);
   return {
     uri: text(main.uri),
+    parentUri: text(main.parentUri),
     kind: text(main.contentKind) ?? text(main.kind),
     state: text(main.stateInfo?.state),
     title: text(main.title),

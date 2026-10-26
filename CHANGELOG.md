@@ -27,7 +27,21 @@ the notes of the version's GitHub Release.
   volume and mute of a player are published with the now playing.
 - Devices added with 1.0: search again in the Discovery tab and click **Update** to get the new
   features; scenes and dashboards keep working (same ids).
+- **Volume** is in percent of the device's range (Gladys's Music box slides to 100): 32 on a
+  0–50 sound bar is now 64. Scenes comparing or setting the volume feature must be adjusted; the
+  _Sony Audio: set the sound_ scene action keeps the device's units.
+- After **Update** in the Discovery tab, the states of the new features are published at once.
 - `@gladysassistant/integration-sdk` 0.16.0.
+
+### Fixed
+
+- `jpeg-js` (artwork reduction) is a production dependency: the 1.1.0 image would not start.
+- The position published with a volume change or a pause is the current one, not the last read
+  (up to 5 minutes old).
+- Play after a stop starts the content again (`setPlayContent`) instead of sending the pause
+  toggle; play while buffering sends nothing.
+- What played before standby no longer comes back as playing when the device turns on.
+- A stopped HDMI input (known by its `parentUri` only) is an input: no pause, no skip.
 
 ## [1.0.1] - 2026-10-16
 

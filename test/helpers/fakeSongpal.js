@@ -349,9 +349,13 @@ export class FakeSongpal {
         return [clone(this.playing)];
       case 'avContent.setPlayContent': {
         const main = this.playing[0];
-        if (params.positionMsec !== undefined && main?.uri === params.uri) {
-          // A USB track played again from a position (the seek).
-          this.setPlaying({ ...main, positionMsec: params.positionMsec });
+        if (main?.uri === params.uri && !params.uri.startsWith('extInput:')) {
+          // A USB track played again, from a position (the seek) or from 0.
+          this.setPlaying({
+            ...main,
+            positionMsec: params.positionMsec ?? 0,
+            stateInfo: { state: 'PLAYING' },
+          });
           return [];
         }
         if (!this.terminals.some((terminal) => terminal.uri === params.uri)) {
@@ -362,7 +366,9 @@ export class FakeSongpal {
       }
       case 'avContent.pausePlayingContent': {
         const main = this.playing[0];
-        if (!main || main.contentKind === 'input') {
+        // A stopped content is unloaded: nothing to resume (the hypothesis
+        // the hub follows, unverified on hardware).
+        if (!main || main.contentKind === 'input' || main.stateInfo?.state === 'STOPPED') {
           return { error: ILLEGAL_STATE };
         }
         const state = main.stateInfo?.state === 'PLAYING' ? 'PAUSED' : 'PLAYING';

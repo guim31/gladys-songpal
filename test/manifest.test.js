@@ -245,3 +245,24 @@ test('the catalog description holds 10 to 100 characters per language', () => {
     );
   }
 });
+
+test('every package the code imports is a production dependency (npm ci --omit=dev)', async () => {
+  const pkg = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
+  const { readdir } = await import('node:fs/promises');
+  const files = (await readdir(new URL('../src', import.meta.url), { recursive: true }))
+    .filter((file) => file.endsWith('.js'))
+    .map((file) => `src/${file}`);
+  files.push('index.js');
+  for (const file of files) {
+    const code = await readFile(new URL(`../${file}`, import.meta.url), 'utf8');
+    for (const [, name] of code.matchAll(/^import[^'"]*['"]([^'"]+)['"]/gm)) {
+      if (name.startsWith('.') || name.startsWith('node:')) {
+        continue;
+      }
+      const root = name.startsWith('@')
+        ? name.split('/').slice(0, 2).join('/')
+        : name.split('/')[0];
+      assert.ok(pkg.dependencies?.[root], `${file}: ${root} must be in dependencies`);
+    }
+  }
+});

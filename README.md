@@ -65,7 +65,7 @@ features are added, the old ones keep their ids. On an input the playback state 
 
 ## Requirements
 
-- Gladys **5.1.0** or later.
+- Gladys **5.3.0** or later.
 - The device on the same network as Gladys, set up once with the Sony Music Center app, with
   **network standby** on (otherwise it leaves the network in standby and cannot be turned on).
 

@@ -27,7 +27,7 @@ Los televisores Sony Bravia usan la misma API, pero se dejan a la integración *
 
 ## Requisitos
 
-- Gladys 5.1.0 o posterior.
+- Gladys 5.3.0 o posterior.
 - El dispositivo conectado a su red (Wi-Fi o Ethernet), configurado una vez con la aplicación Sony
   Music Center.
 - **Espera de red activada** («Espera de red», «Inicio rápido» o «Encendido remoto», según el
@@ -65,7 +65,7 @@ dirección). Solo se crean las funciones que el dispositivo tiene:
 | Función                                                | Tipo de Gladys                                      | Qué hace                                                                                                                                                                    |
 | ------------------------------------------------------ | --------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Encendido / espera**                                 | interruptor                                         | Encendido / en espera.                                                                                                                                                      |
-| **Volumen**                                            | volumen de la música                                | El volumen, en las unidades del dispositivo (a menudo de 0 a 50, de 0 a 74 en un receptor).                                                                                 |
+| **Volumen**                                            | volumen de la música                                | El volumen, en porcentaje (100 % = el máximo del dispositivo). La acción de escena mantiene las unidades del dispositivo.                                                   |
 | **Silencio**                                           | silencio de la música (interruptor sin reproductor) | Silencio activado / desactivado.                                                                                                                                            |
 | **Fuente**                                             | lista                                               | Las entradas del dispositivo (HDMI, TV, óptica, analógica, Bluetooth…), con los nombres ajustados en él. «Otra (red, aplicación)» mientras suena Spotify, Chromecast o USB. |
 | **Modo de sonido**                                     | lista                                               | Los modos de sonido del dispositivo (Standard, Cine, Música…), o los preajustes del ecualizador de un altavoz.                                                              |

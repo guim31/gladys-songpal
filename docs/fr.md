@@ -29,7 +29,7 @@ TV**.
 
 ## Prérequis
 
-- Gladys 5.1.0 ou plus récent.
+- Gladys 5.3.0 ou plus récent.
 - L'appareil connecté à votre réseau (Wi-Fi ou Ethernet), configuré une fois avec l'application
   Sony Music Center.
 - **Veille réseau activée** (« Veille réseau », « Démarrage rapide » ou « Démarrage à distance »
@@ -67,7 +67,7 @@ Seules les fonctionnalités que l'appareil possède sont créées :
 | Fonctionnalité                                     | Type Gladys                                    | Ce qu'elle fait                                                                                                                                                     |
 | -------------------------------------------------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Marche / veille**                                | interrupteur                                   | Allumé / en veille.                                                                                                                                                 |
-| **Volume**                                         | volume de la musique                           | Le volume, dans les unités de l'appareil (souvent 0 à 50, 0 à 74 sur un ampli).                                                                                     |
+| **Volume**                                         | volume de la musique                           | Le volume, en pourcentage (100 % = le maximum de l'appareil). L'action de scène garde les unités de l'appareil.                                                     |
 | **Muet**                                           | muet de la musique (interrupteur sans lecteur) | Sourdine activée / désactivée.                                                                                                                                      |
 | **Source**                                         | liste                                          | Les entrées de l'appareil (HDMI, TV, optique, analogique, Bluetooth…), avec les noms réglés dessus. « Autre (réseau, appli) » pendant Spotify, Chromecast ou l'USB. |
 | **Mode son**                                       | liste                                          | Les modes son de l'appareil (Standard, Cinéma, Musique…), ou les préréglages d'égaliseur d'une enceinte.                                                            |

@@ -9,7 +9,7 @@
 // Features (category/type couples of the core table, see
 // test/gladys-rules.test.js), only those the device has:
 //   - power: switch/binary, writable (on / standby);
-//   - volume: music/volume, writable, bounds of the device;
+//   - volume: music/volume, writable, in percent of the device range;
 //   - mute: switch/binary, writable;
 //   - source: text/select, writable, the inputs of the device (HDMI, TV,
 //     optical, Bluetooth…), plus "Other" while a network source plays;
@@ -305,6 +305,23 @@ export function sourceOptions(caps, language) {
   ]);
 }
 
+/** A device volume as the percent Gladys shows (capabilities/music.md: 0–100). */
+export function volumeToPercent(volume, range) {
+  const { min, max } = range;
+  if (!(max > min)) {
+    return 0;
+  }
+  const clamped = Math.min(max, Math.max(min, volume));
+  return Math.round(((clamped - min) / (max - min)) * 100);
+}
+
+/** A percent written from Gladys as a device volume. */
+export function percentToVolume(percent, range) {
+  const { min, max } = range;
+  const clamped = Math.min(100, Math.max(0, percent));
+  return Math.round(min + (clamped / 100) * (max - min));
+}
+
 /** The features of a device, in display order, from its capabilities. */
 export function featureList(caps, language) {
   const features = [binary(FEATURE_KEYS.POWER)];
@@ -317,8 +334,11 @@ export function featureList(caps, language) {
         read_only: false,
         has_feedback: true,
         keep_history: false,
-        min: caps.volume.min,
-        max: caps.volume.max,
+        // In percent, as the core's Music box shows it (a slider to 100):
+        // the device's own scale (0–50 on a HT-ZF9) is converted.
+        unit: DEVICE_FEATURE_UNITS.PERCENT,
+        min: 0,
+        max: 100,
       },
     });
     // Music mute on a player (Gladys 5.3), a switch on a device that only has
@@ -447,8 +467,7 @@ export function featureValues(gladys, record) {
   }
   // A player's volume and mute go through publishNowPlaying (src/music.js).
   if (has.has(FEATURE_KEYS.VOLUME) && snapshot.volume && !caps.playback) {
-    const { min, max } = caps.volume;
-    add(FEATURE_KEYS.VOLUME, Math.min(max, Math.max(min, snapshot.volume.volume)));
+    add(FEATURE_KEYS.VOLUME, volumeToPercent(snapshot.volume.volume, caps.volume));
     add(FEATURE_KEYS.MUTE, snapshot.volume.mute ? 1 : 0);
   }
   if (has.has(FEATURE_KEYS.SOURCE) && snapshot.sourceKnown) {
